@@ -2,3 +2,4 @@
 
 Check-list:
 * Start projekt :)
+* Create map
