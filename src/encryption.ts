@@ -1,29 +1,35 @@
 const { createHmac } = require('node:crypto');
-const fs = require('node:fs');
+import { PathOrFileDescriptor, readFile, writeFile } from 'node:fs';
+import { Buffer } from 'node:buffer';
 
-function get_hash(file: String): String {
+function get_hash(file: String, key: String): String {
     const hash = createHmac('sha256', file)
+                    .update(key)
                     .digest('hex');
     return hash;
 }
 
-function read_file(file: String) {
+function read_file(file: PathOrFileDescriptor) {
     // file name should be user input, should return encrypted file?
-    fs.readFile(file, 'utf8', (err: Error, data: String): String | undefined => {
-        if (err) {
-        console.error(err);
-        return;
-        }
+    readFile(file, 'utf8', (err: NodeJS.ErrnoException | null, data: String): String | undefined => {
+        if (err) throw err;
         return data;
     });
+}
+
+function write_file(file: PathOrFileDescriptor, content: string | NodeJS.ArrayBufferView<ArrayBufferLike>): void {
+    writeFile(file, content, (err) => {
+        if (err) throw err;
+        console.log('The file has been saved!');
+    }); 
 }
 
 const secret = 'abcdefg';
 //const hash = get_hash(secret);
 //console.log(hash);
 
-const file: String = 'test.txt';
+const file = 'test.txt';
 console.log(read_file(file));
-// Prints:
-//   c0fa1bc00531bd78ef38c628449c5102aeabd49b5dc3a2a516ea6ea959d6658e
+
+const content = 'Some content!';
 
