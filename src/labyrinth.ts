@@ -1,4 +1,4 @@
-import { List, list, append, is_null, head, tail } from "../lib/list";
+import { List, list, append, is_null, head, tail, length } from "../lib/list";
 import { Stack } from "../lib/stack";
 import { ListGraph, lg_new } from "../lib/graphs";
 
@@ -27,11 +27,27 @@ function labyrinth_path(size: number): List<number> {
 }
 
 function labyrinth(size: number): ListGraph {
-    const lab_path = labyrinth_path(size);
-    const lab = lg_new(size);
+    let lab_path: List<number> = labyrinth_path(size);
+    let unvalid_nodes: List<number> = lab_path;
+    const lab: ListGraph = lg_new(size);
     while(!is_null(lab_path)) {
         const parent = head(lab_path);
-        const child = head(tail(lab_path));
-        
+        const test = tail(lab_path);
+        if(!is_null(test)) {
+            const child = head(test);
+            lab.adj[parent] = list(child);
+        }
+        lab_path = tail(lab_path);
     }
+    lab.adj[0] //börja flera gångar
+    //lägg till i unvalid
+    // använda randomiseraren för att hitta nästa nod
+    //kolla så att nästa nod inte är med i unvalid
+    //om den inte är det, lägg till som child till nuvarande noden.
+    //reptera
+
+
+    return lab;
 }
+
+console.log(labyrinth(15));
