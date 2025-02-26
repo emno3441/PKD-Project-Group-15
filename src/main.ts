@@ -9,13 +9,13 @@ let rl = readline.createInterface({
 function ask() {
   rl.question('Do you wish to encrypt or decrypt? \n[E] Encrypt \n[D] Decrypt \n[C] Cancel \n', (answer) => {
     switch(answer.toLowerCase()) {
-      case 'E':
+      case 'e':
       console.log('File Succesfully Encrypted');
       break;
-      case 'D':
+      case 'd':
       console.log('File Succesfully Decrypted');
       break;
-      case 'C':
+      case 'c':
       console.log('Cancelled');
       rl.close();
       process.exit();
