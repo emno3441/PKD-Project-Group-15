@@ -1,7 +1,9 @@
-import { createReadStream, ReadStream, createWriteStream, unlinkSync, readFileSync } from 'node:fs';
+import { 
+    createReadStream, ReadStream, WriteStream, createWriteStream, unlinkSync, PathOrFileDescriptor,
+    readFile, writeFile
+ } from 'node:fs';
 import { argv } from 'node:process';
-import { createHash, createCipheriv, createDecipheriv, randomBytes, BinaryLike } from 'node:crypto';
-import { PathOrFileDescriptor, readFile, writeFile } from 'node:fs';
+import { createHash, createCipheriv, createDecipheriv, randomBytes, Decipher, Cipher } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 
 // should be in main?
@@ -27,6 +29,16 @@ export function get_hash(password: string) {
     return hash.digest('hex');
 }
 
+/**
+ * 
+ * @param password {string} - password
+ * @returns iv {Buffer<ArrayBufferLike>} - initialization vector for ciphering/deciphering
+ */
+function create_iv(password: string): Buffer<ArrayBufferLike>{
+    const iv: Buffer<ArrayBufferLike> = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
+
+    return iv;
+}
 
 /** Encrypts file
  * taken from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
@@ -35,18 +47,19 @@ export function get_hash(password: string) {
  */
 export function encrypt_file(filename: string, password: string): void {
 
-    // Create an initialization vector
-    let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
+    const filename_enc: string = filename + '.enc';
 
-    let cipher = createCipheriv("aes-256-cbc", createHash("sha256").update(password, "utf8").digest(), iv);
+    const iv: Buffer<ArrayBufferLike> = create_iv(password);
 
-    let input = createReadStream(filename);
-    let output = createWriteStream(filename + '.enc');
+    const cipher: Cipher = createCipheriv("aes-256-cbc", createHash("sha256").update(password, "utf8").digest(), iv);
+
+    let input: ReadStream = createReadStream(filename);
+    let output: WriteStream = createWriteStream(filename_enc);
 
     input.pipe(cipher).pipe(output);
 
     output.on('finish', function () {
-        console.log('>>> File ' + filename + ' encrypted as ' + filename + '.enc');
+        console.log('>>> File ' + filename + ' encrypted as ' + filename_enc);
         unlinkSync(filename);
     });
 }
@@ -56,18 +69,18 @@ export function encrypt_file(filename: string, password: string): void {
  * Decrypts encrypted file
  * taken from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
  * @param filename - name of file to be decrypted
- * @param password - hashed correct password to file
+ * @param password - hashed password to file that was used for encryption
  */
 export function decrypt_file(filename: string, password: string): void {
 
-    let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
-
-    let decipher = createDecipheriv("aes-256-cbc", createHash("sha256").update(password, "utf8").digest(), iv);
-
     const filename_enc: string = filename + '.enc';
 
-    let input = createReadStream(filename_enc);
-    let output = createWriteStream(filename);
+    const iv: Buffer<ArrayBufferLike> = create_iv(password);
+
+    const decipher: Decipher = createDecipheriv("aes-256-cbc", createHash("sha256").update(password, "utf8").digest(), iv);
+
+    let input: ReadStream = createReadStream(filename_enc);
+    let output: WriteStream = createWriteStream(filename);
 
     input.pipe(decipher).pipe(output);
 
@@ -95,7 +108,8 @@ function write_file(data: any): void {
 
 // Encryption settings
 const algorithm = 'aes-256-cbc'; // Algorithm to use
-const key = 'a key';
+const password: string = 'a key';
+const key: string = get_hash(password);
 
 
 // unused
@@ -107,8 +121,8 @@ const file = 'test.txt';
 
 const filename: string = get_filename();
 
-// console.log(encrypt_file(filename, key));
-// console.log(decrypt_file(filename, key));
+// encrypt_file(filename, key);
+decrypt_file(filename, key);
 // console.log(get_hash(key));
 // console.log(get_hash(secret));
 
