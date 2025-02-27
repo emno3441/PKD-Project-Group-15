@@ -5,74 +5,35 @@ import { PathOrFileDescriptor, readFile, writeFile } from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 // should be in main?
-function get_filename() {
+function get_filename(): string{
     // user imput
     const filename = argv[2];
-
-    // should be in main and input to functions that create same hash ? 
-    const hash = createHash('sha256');
-
-    const input = createReadStream(filename);
 
     return filename;
 }
 
-/*
-// change to return hex
-function get_hash(): void {
-    input.on('readable', () => {
-        // Only one element is going to be produced by the
-        // hash stream.
-        const data = input.read();
-        if (data)
-            hash.update(data);
-        else {
-            console.log(`${hash.digest('hex')}`);
-        }
-    });
-}*/
 
-// filename should be input ??
-export function encrypt_file(password: string) {
-/*
-    function encrypt_data(data: BinaryLike) {
-        let cipher = createCipheriv('aes-256-cbc', Buffer.from(key), iv);
-        let encrypted = cipher.update(data);
-        encrypted = Buffer.concat([encrypted, cipher.final()]);
-        return {
-            iv: iv.toString('hex'),
-            encryptedData: encrypted.toString('hex')
-        };
-    }*/
-    
-    /*
-    function read_file(file) {
-        // file name should be user input, should return encrypted file?
-        readFile(file, 'utf8', (err: NodeJS.ErrnoException | null, data: String): String | undefined => {
-            if (err) throw err;
-            return data;
-        });
-    } 
-    
-    // change to save under name *filename*_encrypted.txt
-    function write_file(data: any): void {
-        writeFile(filename, data, (err) => {
-            if (err) throw err;
-            console.log('The file has been saved!');
-        });
-    } */
+/**
+ * Creates hash of password
+ * @param password - password
+ * @returns {string} - hash of password
+ */
+export function get_hash(password: string) {
 
-    /*
-    const buffer = readFileSync(filename);
-    const key = randomBytes(16);
-    // Create a new cipher using the algorithm, key, and iv
-    const cipher = createCipheriv(algorithm, key, iv);
-    // Create the new (encrypted) buffer
-    const result = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
-    return result;
-    */
+    const hash = createHash('sha256');
 
-    const filename = get_filename();
+    hash.update(password);
+
+    return hash.digest('hex');
+}
+
+
+/** Encrypts file
+ * taken from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
+ * @param filename - name of file to be encrypted
+ * @param password - hashed correct password to file
+ */
+export function encrypt_file(filename: string, password: string): void {
 
     // Create an initialization vector
     let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
@@ -91,32 +52,51 @@ export function encrypt_file(password: string) {
 }
 
 
-// filename should be input ??
 /**
  * Decrypts encrypted file
- * @param filename 
- * @param password 
+ * taken from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
+ * @param filename - name of file to be decrypted
+ * @param password - hashed correct password to file
  */
-function decrypt_file(filename: string, password: string) {
+export function decrypt_file(filename: string, password: string): void {
 
     let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
 
     let decipher = createDecipheriv("aes-256-cbc", createHash("sha256").update(password, "utf8").digest(), iv);
 
-    let input = createReadStream(filename);
-    let output = createWriteStream(filename.replace('.enc', ''));
+    const filename_enc: string = filename + '.enc';
+
+    let input = createReadStream(filename_enc);
+    let output = createWriteStream(filename);
 
     input.pipe(decipher).pipe(output);
 
     output.on('finish', function () {
-        console.log('<<< File ' + filename + ' decrypted as ' + filename.replace('.enc', ''));
-        unlinkSync(filename);
+        console.log('<<< File ' + filename_enc + ' decrypted as ' + filename);
+        unlinkSync(filename_enc);
     });
 }
+
+/*
+function read_file(file) {
+    // file name should be user input, should return encrypted file?
+    readFile(file, 'utf8', (err: NodeJS.ErrnoException | null, data: String): String | undefined => {
+        if (err) throw err;
+        return data;
+    });
+} 
+
+function write_file(data: any): void {
+    writeFile(filename, data, (err) => {
+        if (err) throw err;
+        console.log('The file has been saved!');
+    });
+} */
 
 // Encryption settings
 const algorithm = 'aes-256-cbc'; // Algorithm to use
 const key = 'a key';
+
 
 // unused
 const content = 'Some content!';
@@ -125,9 +105,12 @@ const file = 'test.txt';
 //const hash = get_hash(secret);
 //console.log(hash);
 
+const filename: string = get_filename();
 
-// console.log(encrypt_file(key));
-console.log(decrypt_file('../test2.txt.enc', key));
+// console.log(encrypt_file(filename, key));
+// console.log(decrypt_file(filename, key));
+// console.log(get_hash(key));
+// console.log(get_hash(secret));
 
 
 
