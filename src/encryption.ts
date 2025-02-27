@@ -62,22 +62,21 @@ export function encrypt_file(password: string) {
         });
     } */
 
-    const filename = get_filename();
-
-    const buffer = readFileSync(filename);
-
-    // Create an initialization vector
-    let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
-
     /*
+    const buffer = readFileSync(filename);
     const key = randomBytes(16);
     // Create a new cipher using the algorithm, key, and iv
     const cipher = createCipheriv(algorithm, key, iv);
     // Create the new (encrypted) buffer
     const result = Buffer.concat([iv, cipher.update(buffer), cipher.final()]);
     return result;
-
     */
+
+    const filename = get_filename();
+
+    // Create an initialization vector
+    let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
+
     let cipher = createCipheriv("aes-256-cbc", createHash("sha256").update(password, "utf8").digest(), iv);
 
     let input = createReadStream(filename);
@@ -93,6 +92,11 @@ export function encrypt_file(password: string) {
 
 
 // filename should be input ??
+/**
+ * Decrypts encrypted file
+ * @param filename 
+ * @param password 
+ */
 function decrypt_file(filename: string, password: string) {
 
     let iv = createHash("sha1").update(password, "utf8").digest().subarray(0, 16); // 16 bytes
@@ -123,7 +127,7 @@ const file = 'test.txt';
 
 
 // console.log(encrypt_file(key));
-console.log(decrypt_file('../text2.txt.enc', key));
+console.log(decrypt_file('../test2.txt.enc', key));
 
 
 
