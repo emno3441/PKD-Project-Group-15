@@ -59,3 +59,10 @@ test('Encrypt_file changes file', () => {
 
     expect(original_file).not.toStrictEqual(encrypted_file);
 });
+
+test('Encrypt_file on non-existing file results in error', () => {
+    const key: string = 'key';
+    const filename: string = 'test99.txt';
+
+    expect(() => encrypt_file(filename, key)).toThrow();
+});
