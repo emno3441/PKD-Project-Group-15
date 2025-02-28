@@ -1,9 +1,9 @@
 import { 
     createReadStream, ReadStream, WriteStream, createWriteStream, unlinkSync, PathOrFileDescriptor,
-    readFile, writeFile
+    readFile, writeFile, readFileSync, writeFileSync
  } from 'node:fs';
 import { argv } from 'node:process';
-import { createHash, createCipheriv, createDecipheriv, randomBytes, Decipher, Cipher } from 'node:crypto';
+import { createHash, createCipheriv, createDecipheriv, randomBytes, Decipher, Cipher, pbkdf2Sync, BinaryLike } from 'node:crypto';
 import { Buffer } from 'node:buffer';
 
 // should be in main?
@@ -24,7 +24,7 @@ export function get_hash(password: string) {
 
     const hash = createHash('sha256');
 
-    hash.update(password);
+    hash.update(password, 'utf-8');
 
     return hash.digest('hex');
 }
@@ -40,13 +40,49 @@ function create_iv(password: string): Buffer<ArrayBufferLike>{
     return iv;
 }
 
+function deriveKeyAndIV(password: string, salt: BinaryLike) {
+    // Derive the key using PBKDF2
+    const key = pbkdf2Sync(password, salt, iterations, keyLength, 'sha256');
+    const iv = key.slice(0, ivLength); // Use the first 16 bytes as the IV
+    return { key, iv };
+}
+const iterations = 100000; // Number of iterations for PBKDF2
+const keyLength = 32; // Key length for AES-256
+const ivLength = 16; // IV length for AES
+
 /** Encrypts file
- * taken from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
+ * taken https://mohammedshamseerpv.medium.com/encrypt-and-decrypt-files-in-node-js-a-step-by-step-guide-using-aes-256-cbc-c25b3ef687c3
  * @param filename - name of file to be encrypted
  * @param password - hashed correct password to file
  */
+export function encrypt_file(filename: string, password: string) {
+    try {
+      // Generate a random salt
+      const salt = randomBytes(16);
+  
+      // Derive the key and IV from the passphrase and salt
+      const { key, iv } = deriveKeyAndIV(password, salt);
+  
+      // Read the file data
+      const fileData = readFileSync(filename);
+  
+      // Create cipher
+      const cipher = createCipheriv(algorithm, key, iv);
+  
+      // Encrypt the data
+      const encryptedData = Buffer.concat([cipher.update(fileData), cipher.final()]);
+  
+      // Write the salt and encrypted data back to the file
+    writeFileSync(filename, Buffer.concat([salt, encryptedData]));
+  
+      console.log('File encrypted successfully.');
+    } catch (error) {
+      console.error('Error during encryption:');
+    }
+  }
+/*
 export function encrypt_file(filename: string, password: string): void {
-
+from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
     const filename_enc: string = filename + '.enc';
 
     const iv: Buffer<ArrayBufferLike> = create_iv(password);
@@ -59,21 +95,47 @@ export function encrypt_file(filename: string, password: string): void {
     input.pipe(cipher).pipe(output);
 
     output.on('finish', function () {
-        console.log('>>> File ' + filename + ' encrypted as ' + filename_enc);
         unlinkSync(filename);
-    });
-}
+   });
+} */
 
 
 /**
  * Decrypts encrypted file
- * taken from https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
+ * taken from https://mohammedshamseerpv.medium.com/encrypt-and-decrypt-files-in-node-js-a-step-by-step-guide-using-aes-256-cbc-c25b3ef687c3
  * @param filename - name of file to be decrypted
  * @param password - hashed password to file that was used for encryption
  */
+export function decrypt_file(filename: string, password: string) {
+    try {
+      // Read the file data
+      const fileData = readFileSync(filename);
+  
+      // Extract the salt (first 16 bytes) and the encrypted data
+      const salt = fileData.slice(0, 16);
+      const encryptedData = fileData.slice(16);
+  
+      // Derive the key and IV from the passphrase and extracted salt
+      const { key, iv } = deriveKeyAndIV(password, salt);
+  
+      // Create decipher
+      const decipher = createDecipheriv(algorithm, key, iv);
+  
+      // Decrypt the data
+      const decryptedData = Buffer.concat([decipher.update(encryptedData), decipher.final()]);
+  
+      // Write the decrypted data back to the file
+    writeFileSync(filename, decryptedData);
+  
+      console.log('File decrypted successfully.');
+    } catch (error) {
+      console.error('Error during decryption:');
+    }
+}
+/*
 export function decrypt_file(filename: string, password: string): void {
-
-    const filename_enc: string = filename + '.enc';
+https://blog.nodejslab.com/encrypt-decrypt-files-with-node-js/
+//    const filename_enc: string = filename + '.enc';
 
     const iv: Buffer<ArrayBufferLike> = create_iv(password);
 
@@ -85,10 +147,9 @@ export function decrypt_file(filename: string, password: string): void {
     input.pipe(decipher).pipe(output);
 
     output.on('finish', function () {
-        console.log('<<< File ' + filename_enc + ' decrypted as ' + filename);
         unlinkSync(filename_enc);
     });
-}
+}*/
 
 /*
 function read_file(file) {
@@ -97,20 +158,28 @@ function read_file(file) {
         if (err) throw err;
         return data;
     });
-} 
+} */
 
-function write_file(data: any): void {
+// should be in main ?? used for test
+/** 
+ * Creates a file with given data as text
+ * taken from Node.js documentation at 
+ * https://nodejs.org/docs/latest/api/fs.html#fswritefilefile-data-options-callback
+ * @param filename {string} - name of file to write
+ * @param data {string} - text in created file
+ */
+export function write_file(filename: string, data: string): void {
     writeFile(filename, data, (err) => {
         if (err) throw err;
-        console.log('The file has been saved!');
     });
-} */
+}
+
 
 // Encryption settings
 const algorithm = 'aes-256-cbc'; // Algorithm to use
 const password: string = 'a key';
 const key: string = get_hash(password);
-
+/*
 
 // unused
 const content = 'Some content!';
@@ -119,12 +188,16 @@ const file = 'test.txt';
 //const hash = get_hash(secret);
 //console.log(hash);
 
+*/
 const filename: string = get_filename();
 
 // encrypt_file(filename, key);
-decrypt_file(filename, key);
+// decrypt_file(filename, key);
 // console.log(get_hash(key));
 // console.log(get_hash(secret));
+
+// write_file(filename, 'hello world');
+
 
 
 
