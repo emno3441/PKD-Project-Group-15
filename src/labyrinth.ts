@@ -1,7 +1,7 @@
 import { List, list, append, is_null, head, tail, length, remove, enum_list } from "../lib/list";
 import { ListGraph } from "../lib/graphs";
 
-function build_array<T>(size: number, content: (i: number) => T): Array<T> {
+export function build_array<T>(size: number, content: (i: number) => T): Array<T> {
     const result = Array<T>(size);
     for (var i = 0; i < size; i = i + 1) {
         result[i] = content(i);
@@ -15,7 +15,7 @@ function getRandomInt(min: number, max: number): number {
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
 }
 
-function labyrinth_path(size: number): List<number> {
+export function labyrinth_path(size: number): List<number> {
     let start: number = 0;
     const end = size - 1;
     let path: List<number> = list(start);
@@ -32,9 +32,12 @@ function labyrinth_path(size: number): List<number> {
     }
     return path;
 }
-
-function labyrinth2(size: number) {
-    let path = labyrinth_path(size);
+/**
+ * Creates a labyrinth which only has one solution
+ * @param size the number of nodes
+ * @returns graph which only has one path from start to end
+ */
+export function labyrinth2(size: number, path: List<number>) {
     let unvalid = path
     const lab: ListGraph = { size, adj: build_array(size, _ => list()) };
     while (!is_null(path)) {
@@ -54,6 +57,9 @@ function labyrinth2(size: number) {
     }
 
     function numbchild(valid_node: List<number>, parent: number, lab: ListGraph) {
+        if (parent === (size - 1)) {
+            return lab.adj[parent] = list();
+        }
         const numb_of_child: number = getRandomInt(0, 7);
         if (length(valid_node) >= (2)) {
             if (numb_of_child === 0) {
@@ -110,4 +116,3 @@ function labyrinth2(size: number) {
     return lab;
 }
 
-console.log(labyrinth2(25));
