@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@types/electron": "^1.4.38",
     "@types/jest": "^29.5.14",
     "@types/wicg-file-system-access": "^2023.10.5",
     "ts-jest": "^29.2.6"
@@ -7,6 +8,7 @@
   "dependencies": {
     "@types/open-file-explorer": "^1.0.2",
     "crypto-ts": "^1.0.2",
+    "electron": "^34.3.0",
     "explorer-opener": "^1.0.1",
     "file-selector": "^2.1.2",
     "jest": "^29.7.0",
@@ -15,5 +17,28 @@
     "source-map-support": "^0.5.21",
     "typescript": "^5.8.2",
     "use-file-picker": "^2.1.2"
-  }
+  },
+  "name": "pkd-project-group-15",
+  "version": "1.0.0",
+  "description": "Check-list:\r * Start projekt :)\r * Create map",
+  "main": "main.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emno3441/PKD-Project-Group-15.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/emno3441/PKD-Project-Group-15/issues"
+  },
+  "homepage": "https://github.com/emno3441/PKD-Project-Group-15#readme"
 }
