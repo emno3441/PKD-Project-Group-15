@@ -37,7 +37,7 @@ export function labyrinth_path(size: number): List<number> {
  * @param size the number of nodes
  * @returns graph which only has one path from start to end
  */
-export function labyrinth2(size: number, path: List<number>) {
+export function labyrinth2(size: number, path: List<number>): ListGraph {
     let unvalid = path
     const lab: ListGraph = { size, adj: build_array(size, _ => list()) };
     while (!is_null(path)) {

@@ -1,68 +1,98 @@
 import { Stack, push, top, empty, is_empty, pop} from "../lib/stack";
-import { labyrinth2, build_array } from "./labyrinth";
-import { List, head, is_null, length } from "../lib/list";
+import { labyrinth2, build_array, labyrinth_path } from "./labyrinth";
+import { List, head, is_null, length, tail, append, list } from "../lib/list";
 import * as readline from 'readline';
+import { lstat } from "fs";
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
 
-function labyrinth_navigator(path: List<number>, size: number) {
+
+export async function labyrinth_navigator(path: List<number>, size: number) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
     const end: number = (size - 1);
     const key: List<number> = path
     const lab = labyrinth2(size, path);
-    let obama: Stack<number> = empty<number>();
-    let parent: Array<number> = build_array(size, _ => -1);
-    obama = push(0, obama);
-    let current = 0;
+    
+    let current: number = 0;
 
     while (current !== end) {
         const possible_paths = lab.adj[current];
         if (is_null(possible_paths)) {
-
+            current = 0;
         }
-        else if (length(possible_paths) === 1) {
-            let next_node: number = head(possible_paths);
+        else {
+             current = await askUserChoice(current, possible_paths, rl);
         }
-        else if (length(possible_paths) === 2) {
-
-        }
-        else if (length(possible_paths) === 3) {
-            
-        }
-    }
-
-    function one_path(node: number, parent: number, obama: Stack<number>) {
-        rl.question('[Forward] or [Backward]', (answer) => {
-            switch(answer.toLowerCase()) {
-            case "forward":
-                obama = push(node, obama);
-                console.log('You moved forward');
-                break;
-            case 'backward':
-                console.log('You moved backward');
-                break;
-            default:
-                console.log('Invalid answer!');
-            }
-            rl.close();
-        });
-    }
-}
-
-
-
-rl.question('Is this example useful? [y/n] ', (answer) => {
-    switch(answer.toLowerCase()) {
-    case 'y':
-        console.log('Super!');
-        break;
-    case 'n':
-        console.log('Sorry! :(');
-        break;
-    default:
-        console.log('Invalid answer!');
     }
     rl.close();
-});
+    return key;
+}
+labyrinth_navigator(labyrinth_path(25), 25);
+
+
+function shuffle(list1: List<number> ): List<number>  {
+    let currentIndex = length(list1);
+    if (currentIndex === 1) {
+        return list1
+    }
+
+    if (currentIndex === 2) {
+        const val1 = is_null(list1) ? 1 : head(list1);
+        const val2 = is_null(list1) ? list1 : tail(list1);
+        const val3 = is_null(val2) ? 1 : head(val2);
+    
+        return (Math.random() <= 0.5) ?
+            list1
+            : list1 = list(val3, val1);
+    }
+    else {
+        const val1 = is_null(list1) ? 1 : head(list1);
+        const val2 = is_null(list1) ? list1 : tail(list1);
+        const val3 = is_null(val2) ? 1 : head(val2);
+        const val4 = is_null(val2) ? list1 : tail(val2);
+        const val5 = is_null(val4) ? 1 : head(val4);
+
+        return (Math.random() <= 0.5) ?
+            list1
+            : Math.random() <= 0.5 ? list1 = list(val3, val1, val5)
+                : Math.random() <= 0.5 ? list1 = list(val3, val5, val1)
+                    : Math.random() <= 0.5 ? list1 = list(val5, val3, val1)
+                        : Math.random() <= 0.5 ? list1 = list(val1, val5, val3)
+                            : list1 = list(val5, val1, val3);
+    } 
+};
+
+function askUserChoice(current: number, choices: List<number>, rl: readline.Interface): Promise<number> {
+    const DIRECTIONS = ["forward", "left", "right"];
+    return new Promise((resolve) => {
+        console.log(`You are at ${current}. Choose your next step:`);
+
+        let index = 0;
+        let optionList = choices;
+        while (!is_null(optionList)) {
+            console.log(`${DIRECTIONS[index]} -> ${head(optionList)}`);
+            optionList = tail(optionList);
+            index++;
+        }
+
+        rl.question("Enter 'forward', 'left', or 'right': ", (answer) => {
+            const choiceIndex = DIRECTIONS.indexOf(answer.toLowerCase());
+            if (choiceIndex >= 0 && choiceIndex < length(choices)) {
+                let selected = choices;
+                for (let i = 0; i < choiceIndex; i++) {
+                    if (!is_null(selected)) {
+                        selected = tail(selected);
+                    }
+                }
+                if (!is_null(selected)) {
+                    resolve(head(selected));
+                }
+            } else {
+                console.log("Invalid choice, try again.");
+                resolve(askUserChoice(current, choices, rl));
+            }
+        });
+    });
+}
