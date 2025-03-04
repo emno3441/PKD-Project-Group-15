@@ -14,7 +14,10 @@ function getRandomInt(min: number, max: number): number {
     const maxFloored = Math.floor(max);
     return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
 }
-
+/** Creates a path through the labyrinth
+* @param size the number of nodes
+* @returns A list of numbers from 0 to end
+*/
 export function labyrinth_path(size: number): List<number> {
     let start: number = 0;
     const end = size - 1;
@@ -25,7 +28,7 @@ export function labyrinth_path(size: number): List<number> {
             path = append(path, list(end));
             break
         }
-        const next_node = getRandomInt(start + 1, end);
+        const next_node = getRandomInt(start + 1, end); //generates random node
 
         path = append(path, list(next_node));
         start = next_node
@@ -35,12 +38,13 @@ export function labyrinth_path(size: number): List<number> {
 /**
  * Creates a labyrinth which only has one solution
  * @param size the number of nodes
+ * @param path A list of number which represent the way through the graph from start to end
  * @returns graph which only has one path from start to end
  */
 export function labyrinth2(size: number, path: List<number>): ListGraph {
     let unvalid = path
     const lab: ListGraph = { size, adj: build_array(size, _ => list()) };
-    while (!is_null(path)) {
+    while (!is_null(path)) { //Makes the correct child nodes of path
         const parent = head(path);
         const test = tail(path);
         if (!is_null(test)) {
@@ -50,12 +54,13 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         path = tail(path);
     }
 
-    let valid = enum_list(0, size)
-    while (!is_null(unvalid)) {
+    let valid = enum_list(0, size - 1)
+    while (!is_null(unvalid)) { //removes unvalid nodes from the valid
         valid = remove(head(unvalid), valid);
         unvalid = tail(unvalid)
     }
 
+    //function decides how many childnodes a node should have with a randomizer.
     function numbchild(valid_node: List<number>, parent: number, lab: ListGraph) {
         if (parent === (size - 1)) {
             return lab.adj[parent] = list();
@@ -76,6 +81,7 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         }
     }
 
+    //Function adds one child node to parent node
     function one_child(parent: number, lab: ListGraph, valid_node: List<number>) {
         if (is_null(valid_node)) {
             return
@@ -86,6 +92,7 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         return
     }
 
+    //Function adds two child nodes to parent node
     function two_child(parent: number, lab: ListGraph, valid_node: List<number>) {
         if (is_null(valid_node)) {
             return
@@ -101,8 +108,8 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         return
     }
 
-    let pending = list(0);
-    while (!is_null(pending)) {
+    let pending = list(0); //nodes to be proccesed
+    while (!is_null(pending)) { // adds child nodes to parent and then adds children into pending.
         const parent = head(pending);
         numbchild(valid, parent, lab);
         let children = lab.adj[parent];
