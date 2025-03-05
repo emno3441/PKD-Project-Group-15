@@ -21,7 +21,7 @@ function getRandomInt(min: number, max: number): number {
 */
 export function labyrinth_path(size: number): List<number> {
     let start: number = 0;
-    const end = size - 1;
+    const end: number = size - 1;
     let path: List<number> = list(start);
 
     while (start !== end) {
@@ -29,7 +29,7 @@ export function labyrinth_path(size: number): List<number> {
             path = append(path, list(end));
             break
         }
-        const next_node = getRandomInt(start + 1, end); //generates random node
+        const next_node: number = getRandomInt(start + 1, end); //generates random node
 
         path = append(path, list(next_node));
         start = next_node
@@ -43,7 +43,7 @@ export function labyrinth_path(size: number): List<number> {
  * @returns graph which only has one path from start to end
  */
 export function labyrinth2(size: number, path: List<number>): ListGraph {
-    let unvalid = path
+    let unvalid: List<number> = path
     const lab: ListGraph = { size, adj: build_array(size, _ => list()) };
     while (!is_null(path)) { //Makes the correct child nodes of path
         const parent = head(path);
@@ -55,7 +55,7 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         path = tail(path);
     }
 
-    let valid = enum_list(0, size - 1)
+    let valid: List<number> = enum_list(0, size - 1)
     while (!is_null(unvalid)) { //removes unvalid nodes from the valid
         valid = remove(head(unvalid), valid);
         unvalid = tail(unvalid)
@@ -83,11 +83,11 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
     }
 
     //Function adds one child node to parent node
-    function one_child(parent: number, lab: ListGraph, valid_node: List<number>) {
+    function one_child(parent: number, lab: ListGraph, valid_node: List<number>): void {
         if (is_null(valid_node)) {
             return
         }
-        const child = head(valid_node);
+        const child: number = head(valid_node);
         valid_node = tail(valid_node);
         lab.adj[parent] = is_null(lab.adj[parent]) ? list(child) : append(lab.adj[parent], list(child));
         lab.adj[parent] = shuffle(lab.adj[parent]); //shuffles the choices
@@ -95,23 +95,23 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
     }
 
     //Function adds two child nodes to parent node
-    function two_child(parent: number, lab: ListGraph, valid_node: List<number>) {
+    function two_child(parent: number, lab: ListGraph, valid_node: List<number>): void {
         if (is_null(valid_node)) {
             return
         }
-        const child1 = head(valid_node);
+        const child1: number = head(valid_node);
         valid_node = tail(valid_node);
         if (is_null(valid_node)) {
             return
         }
-        const child2 = head(valid_node);
+        const child2: number = head(valid_node);
         valid_node = tail(valid_node);
         lab.adj[parent] = is_null(lab.adj[parent]) ? list(child1, child2) : append(lab.adj[parent], list(child1, child2));
         lab.adj[parent] = shuffle(lab.adj[parent]); //shuffles the choices
         return
     }
 
-    let pending = list(0); //nodes to be proccesed
+    let pending: List<number> = list(0); //nodes to be proccesed
     while (!is_null(pending)) { // adds child nodes to parent and then adds children into pending.
         const parent = head(pending);
         numbchild(valid, parent, lab);
@@ -131,26 +131,26 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
 * @returns list of numbers
 */
 function shuffle(list1: List<number> ): List<number>  {
-    let currentIndex = length(list1);
+    const currentIndex: number = length(list1);
     if (currentIndex === 1) {
         return list1
     }
 
     if (currentIndex === 2) {
-        const val1 = is_null(list1) ? 1 : head(list1);
-        const val2 = is_null(list1) ? list1 : tail(list1);
-        const val3 = is_null(val2) ? 1 : head(val2);
+        const val1: number = is_null(list1) ? 1 : head(list1);
+        const val2: List<number> = is_null(list1) ? list1 : tail(list1);
+        const val3: number = is_null(val2) ? 1 : head(val2);
     
         return (Math.random() <= 0.5) ?
             list1
             : list1 = list(val3, val1); //switches places of the two choices
     }
     else {
-        const val1 = is_null(list1) ? 1 : head(list1);
-        const val2 = is_null(list1) ? list1 : tail(list1);
-        const val3 = is_null(val2) ? 1 : head(val2);
-        const val4 = is_null(val2) ? list1 : tail(val2);
-        const val5 = is_null(val4) ? 1 : head(val4);
+        const val1: number = is_null(list1) ? 1 : head(list1);
+        const val2: List<number> = is_null(list1) ? list1 : tail(list1);
+        const val3: number = is_null(val2) ? 1 : head(val2);
+        const val4: List<number> = is_null(val2) ? list1 : tail(val2);
+        const val5: number = is_null(val4) ? 1 : head(val4);
 
         return (Math.random() <= 0.5) ?
             list1
