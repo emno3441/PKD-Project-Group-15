@@ -33,42 +33,6 @@ export async function labyrinth_navigator(path: List<number>, size: number) {
     return key;
 }
 labyrinth_navigator(labyrinth_path(25), 25);
-
-/** A function that sometimes shuffles a list
-* @param list1 list of nodes
-* @returns list of numbers
-*/
-function shuffle(list1: List<number> ): List<number>  {
-    let currentIndex = length(list1);
-    if (currentIndex === 1) {
-        return list1
-    }
-
-    if (currentIndex === 2) {
-        const val1 = is_null(list1) ? 1 : head(list1);
-        const val2 = is_null(list1) ? list1 : tail(list1);
-        const val3 = is_null(val2) ? 1 : head(val2);
-    
-        return (Math.random() <= 0.5) ?
-            list1
-            : list1 = list(val3, val1); //switches places of the two choices
-    }
-    else {
-        const val1 = is_null(list1) ? 1 : head(list1);
-        const val2 = is_null(list1) ? list1 : tail(list1);
-        const val3 = is_null(val2) ? 1 : head(val2);
-        const val4 = is_null(val2) ? list1 : tail(val2);
-        const val5 = is_null(val4) ? 1 : head(val4);
-
-        return (Math.random() <= 0.5) ?
-            list1
-            : Math.random() <= 0.5 ? list1 = list(val3, val1, val5)
-                : Math.random() <= 0.5 ? list1 = list(val3, val5, val1)
-                    : Math.random() <= 0.5 ? list1 = list(val5, val3, val1)
-                        : Math.random() <= 0.5 ? list1 = list(val1, val5, val3)
-                            : list1 = list(val5, val1, val3); //multiple ways of shuffling the choices
-    } 
-};
     
 
 /**

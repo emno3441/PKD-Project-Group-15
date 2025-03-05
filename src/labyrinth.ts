@@ -16,6 +16,7 @@ function getRandomInt(min: number, max: number): number {
 }
 /** Creates a path through the labyrinth
 * @param size the number of nodes
+* @precondition size > 2
 * @returns A list of numbers from 0 to end
 */
 export function labyrinth_path(size: number): List<number> {
@@ -89,6 +90,7 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         const child = head(valid_node);
         valid_node = tail(valid_node);
         lab.adj[parent] = is_null(lab.adj[parent]) ? list(child) : append(lab.adj[parent], list(child));
+        lab.adj[parent] = shuffle(lab.adj[parent]); //shuffles the choices
         return
     }
 
@@ -105,6 +107,7 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
         const child2 = head(valid_node);
         valid_node = tail(valid_node);
         lab.adj[parent] = is_null(lab.adj[parent]) ? list(child1, child2) : append(lab.adj[parent], list(child1, child2));
+        lab.adj[parent] = shuffle(lab.adj[parent]); //shuffles the choices
         return
     }
 
@@ -123,3 +126,38 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
     return lab;
 }
 
+/** A function that sometimes shuffles a list
+* @param list1 list of nodes
+* @returns list of numbers
+*/
+function shuffle(list1: List<number> ): List<number>  {
+    let currentIndex = length(list1);
+    if (currentIndex === 1) {
+        return list1
+    }
+
+    if (currentIndex === 2) {
+        const val1 = is_null(list1) ? 1 : head(list1);
+        const val2 = is_null(list1) ? list1 : tail(list1);
+        const val3 = is_null(val2) ? 1 : head(val2);
+    
+        return (Math.random() <= 0.5) ?
+            list1
+            : list1 = list(val3, val1); //switches places of the two choices
+    }
+    else {
+        const val1 = is_null(list1) ? 1 : head(list1);
+        const val2 = is_null(list1) ? list1 : tail(list1);
+        const val3 = is_null(val2) ? 1 : head(val2);
+        const val4 = is_null(val2) ? list1 : tail(val2);
+        const val5 = is_null(val4) ? 1 : head(val4);
+
+        return (Math.random() <= 0.5) ?
+            list1
+            : Math.random() <= 0.5 ? list1 = list(val3, val1, val5)
+                : Math.random() <= 0.5 ? list1 = list(val3, val5, val1)
+                    : Math.random() <= 0.5 ? list1 = list(val5, val3, val1)
+                        : Math.random() <= 0.5 ? list1 = list(val1, val5, val3)
+                            : list1 = list(val5, val1, val3); //multiple ways of shuffling the choices
+    } 
+};
