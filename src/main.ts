@@ -1,13 +1,26 @@
 import * as readline from "readline";
 import { decrypt_file, encrypt_file } from "./encryption";
+import { labyrinth_path } from "./labyrinth";
+import { List, list } from "../lib/list";
+import { error } from "console";
 //import {openfilepath} from './openfile';
+const key: string = "10101011010";
+const filename = "../tests/lorem_ipsum.txt";
 
 let rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
-const key: string = "xXX420x69x1337XXx";
-const filename = "../test_file.txt";
+
+function listToString(list: Array<Number>): String | undefined{
+  let str: String ="";
+  if (list !== null) {
+    for (let i = 0; i < list.length; i++) {
+    str+=list[i]+"%";
+    return str
+    }
+  }
+}
 
 //recursive function that repeats until the ask gets a valid answer in this case (e, d or c input)
 function ask() {
@@ -16,13 +29,12 @@ function ask() {
     {
       case 'e':
           //function of encryption and interface goes here
-          //filename = openfilepath
           encrypt_file(filename, key);
           console.log('File Succesfully Encrypted');
           process.exit();
       case 'd':
         //function of decryption and game interface goes here
-        //filename = openfilepath
+        //filename = openfilepath 
         decrypt_file(filename, key);
         console.log('File Succesfully Decrypted');
         process.exit();
