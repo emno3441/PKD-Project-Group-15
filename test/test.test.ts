@@ -25,8 +25,6 @@ test('Wrong key used to decrypt file', () => {
     const wrong_key: string = 'lock'
     const filename: string = 'test2.txt';
 
-    const unhandled_file: string = readFileSync(filename, 'utf8');
-
     encrypt_file(filename, key);
 
     expect(() => decrypt_file(filename, wrong_key)).toThrow();
