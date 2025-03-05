@@ -36,7 +36,7 @@ function ask() {
           //if game win
           decrypt_file(filename, key);
           console.log('File Succesfully Decrypted');
-          ph_delete(<filename, key>, hashtableOfPasswords, )
+          ph_delete(hashtableOfPasswords)
           //if game loss
           console.log('File Failed to be Decrypted');
         }
