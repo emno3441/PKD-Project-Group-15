@@ -4,6 +4,12 @@
     "module": "CommonJS",
     "outDir": "./dist",
     "strict": true,
-    "sourceMap": true,
-  }
+    "sourceMap": false,
+  },
+  "exclude": [
+      "node_modules",
+      "dist",
+      "tests",
+      "lib"
+  ]
 }
