@@ -3,24 +3,18 @@ import { decrypt_file, encrypt_file } from "./encryption";
 import { labyrinth_path } from "./labyrinth";
 import { List, list } from "../lib/list";
 import { error } from "console";
-//import {openfilepath} from './openfile';
-const key: string = "10101011010";
-const filename = "../tests/lorem_ipsum.txt";
+import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
+import { getHashTableFromFile, listToString } from "./stored_keys";
 
+
+let key: string;
+const filename = "../tests/lorem_ipsum.txt";
+const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
 let rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-function listToString(list: Array<Number>): String | undefined{
-  let str: String ="";
-  if (list !== null) {
-    for (let i = 0; i < list.length; i++) {
-    str+=list[i]+"%";
-    return str
-    }
-  }
-}
 
 //recursive function that repeats until the ask gets a valid answer in this case (e, d or c input)
 function ask() {
@@ -29,14 +23,27 @@ function ask() {
     {
       case 'e':
           //function of encryption and interface goes here
+          key = listToString(labyrinth_path(10))
           encrypt_file(filename, key);
+          ph_insert(hashtableOfPasswords, [filename, key], )
           console.log('File Succesfully Encrypted');
           process.exit();
       case 'd':
         //function of decryption and game interface goes here
         //filename = openfilepath 
-        decrypt_file(filename, key);
-        console.log('File Succesfully Decrypted');
+        if (filename in ph_lookup(hashtableOfPasswords, filename)){
+          //insert gamelogic
+          //if game win
+          decrypt_file(filename, key);
+          console.log('File Succesfully Decrypted');
+          ph_delete(<filename, key>, hashtableOfPasswords, )
+          //if game loss
+          console.log('File Failed to be Decrypted');
+        }
+        else {
+          console.log('File not encrypted')
+        }
+
         process.exit();
       case 'c':
         //cancels the ask function
