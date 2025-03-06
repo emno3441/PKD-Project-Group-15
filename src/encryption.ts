@@ -6,15 +6,15 @@ import { Buffer } from 'node:buffer';
  * @param {string} password - password
  * @returns {string} - hash of password
  */
-export function get_hash(password: string): string {
-    const hash: Hash = createHash('sha256');
-    
-    hash.update(password, 'utf-8');
-
-    const hashed_password: string = hash.digest('hex');
-
-    return hashed_password;
-}
+//export function get_hash(password: string): string {
+//    const hash: Hash = createHash('sha256');
+//    
+//    hash.update(password, 'utf-8');
+//
+//    const hashed_password: string = hash.digest('hex');
+//
+//    return hashed_password;
+//}
 
 /** Encrypts file with algorithm aes-256-cbc, with salt as first 16 bytes
  * @param {string} filename - name of file to be encrypted
@@ -22,13 +22,13 @@ export function get_hash(password: string): string {
  */
 export function encrypt_file(filename: string, password: string): void {
     try {
-        const filedata: Buffer<ArrayBuffer> = readFileSync(filename);
+        const filedata: Buffer<ArrayBufferLike> = readFileSync(filename);
 
         const salt: Buffer<ArrayBufferLike> = randomBytes(16);
 
         const iv: Buffer<ArrayBufferLike> = create_iv(password, salt);
 
-        const key: Buffer<ArrayBuffer> = get_key(password, salt);
+        const key: Buffer<ArrayBufferLike> = get_key(password, salt);
 
         const cipher: Cipher = createCipheriv(algorithm, key, iv);
 
@@ -56,7 +56,7 @@ export function decrypt_file(filename: string, password: string): void {
 
         const encrypteddata: Buffer<ArrayBufferLike> = filedata.slice(16);
 
-        const key: Buffer<ArrayBuffer> = get_key(password, salt);
+        const key: Buffer<ArrayBufferLike> = get_key(password, salt);
 
         const iv: Buffer<ArrayBufferLike> = create_iv(password, salt);
 
@@ -75,10 +75,10 @@ export function decrypt_file(filename: string, password: string): void {
 
 /** Creates initialization vector for algorithm aes-256-cbc
  * @param {string} password - password for file
- * @param {Buffer<ArrayBuffer>} salt - salt used in encryption
+ * @param {Buffer<ArrayBufferLike>} salt - salt used in encryption
  * @returns {Buffer<ArrayBufferLike>} - initialization vector for algorithm aes-256-cbc
  */
-function create_iv(password: string, salt: Buffer<ArrayBuffer>): Buffer<ArrayBufferLike> {
+function create_iv(password: string, salt: Buffer<ArrayBufferLike>): Buffer<ArrayBufferLike> {
     const key_length: number = 16;
     const iterations: number = 100000;
     const digest: string = 'sha1'
@@ -88,10 +88,10 @@ function create_iv(password: string, salt: Buffer<ArrayBuffer>): Buffer<ArrayBuf
 
 /** Creates key for algorithm aes-256-cbc
  * @param {string} password - password for file
- * @param {Buffer<ArrayBuffer>} salt - salt used in encryption
- * @returns {Buffer<ArrayBuffer>} - key for algorithm aes-256-cbc
+ * @param {Buffer<ArrayBufferLike>} salt - salt used in encryption
+ * @returns {Buffer<ArrayBufferLike>} - key for algorithm aes-256-cbc
  */
-function get_key(password: string, salt: Buffer<ArrayBuffer>): Buffer<ArrayBuffer> {
+function get_key(password: string, salt: Buffer<ArrayBufferLike>): Buffer<ArrayBufferLike> {
     const key_length: number = 32;
     const iterations: number = 100000;
     const digest: string = 'sha256'

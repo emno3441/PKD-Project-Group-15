@@ -7,15 +7,14 @@ import { error } from "console";
 import {ProbingHashtable, ch_delete, ch_insert, ph_empty, ph_keys, ch_lookup} from "../lib/hashtables";
 import { getHashTableFromFile, listToString } from "./stored_keys";
 
-const solution: List<number> = list();
-let key = "";
-const filename = "../tests/lorem_ipsum.txt";
+const solution: List<number> = list(0, 2, 5, 7, 8, 9);
+let key = listToString(solution);
+const filename = "../../Code/PKD-Project-Group-15/tests/lorem_ipsum.txt";
 const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
 let rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
-
 
 //recursive function that repeats until the ask gets a valid answer in this case (e, d or c input)
 function ask() {
