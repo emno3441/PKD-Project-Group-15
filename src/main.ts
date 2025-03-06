@@ -1,13 +1,14 @@
 import * as readline from "readline";
 import { decrypt_file, encrypt_file } from "./encryption";
 import { labyrinth_path } from "./labyrinth";
-import { List, list } from "../lib/list";
+import { labyrinth_navigator } from "./gameloop";
+import { List, list, to_string } from "../lib/list";
 import { error } from "console";
-import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
+import {ProbingHashtable, ch_delete, ch_insert, ph_empty, ph_keys, ch_lookup} from "../lib/hashtables";
 import { getHashTableFromFile, listToString } from "./stored_keys";
 
-
-let key: string;
+const solution: List<number> = list();
+let key = "";
 const filename = "../tests/lorem_ipsum.txt";
 const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
 let rl = readline.createInterface({
@@ -23,26 +24,26 @@ function ask() {
     {
       case 'e':
           //function of encryption and interface goes here
-          key = listToString(labyrinth_path(10))
+          //key = to_string(key);
           encrypt_file(filename, key);
-          ph_insert(hashtableOfPasswords, [filename, key], )
+          //ph_insert(hashtableOfPasswords, [filename, key], )
           console.log('File Succesfully Encrypted');
           process.exit();
       case 'd':
         //function of decryption and game interface goes here
         //filename = openfilepath 
-        if (filename in ph_lookup(hashtableOfPasswords, filename)){
+        //if (filename in ph_lookup(hashtableOfPasswords, filename)){
           //insert gamelogic
           //if game win
+          //labyrinth_navigator(solution, 10);
+          key = listToString(solution); 
           decrypt_file(filename, key);
           console.log('File Succesfully Decrypted');
-          ph_delete(hashtableOfPasswords)
-          //if game loss
-          console.log('File Failed to be Decrypted');
-        }
-        else {
-          console.log('File not encrypted')
-        }
+
+        //}
+        //else {
+          //console.log('File not encrypted')
+        //}
 
         process.exit();
       case 'c':
