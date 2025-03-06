@@ -65,7 +65,7 @@ export function decrypt_file(filename: string, password: string): void {
         let decrypted: Buffer<ArrayBufferLike> = decipher.update(encrypteddata);
 
         decrypted = Buffer.concat([decrypted, decipher.final()]);
-
+    
         writeFileSync(filename, decrypted);     
 
     } catch (error) {
