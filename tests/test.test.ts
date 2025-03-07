@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { encrypt_file, decrypt_file, get_hash } from '../src/encryption';
+import { encrypt_file, decrypt_file } from '../src/encryption';
 
 
 
@@ -30,20 +30,6 @@ test('Wrong key used to decrypt file', () => {
     encrypt_file(filename, key);
 
     expect(() => decrypt_file(filename, wrong_key)).toThrow();
-});
-
-test('Same key hashes to same value', () => {
-    const key1: string = 'key';
-    const key2: string = 'key';
-
-    expect(get_hash(key1)).toStrictEqual(get_hash(key2));
-});
-
-test('Keys does not hash to same value', () => {
-    const key1: string = 'key';
-    const key2: string = 'lock';
-
-    expect(get_hash(key1)).not.toStrictEqual(get_hash(key2));
 });
 
 // will not work if test files already exist in map

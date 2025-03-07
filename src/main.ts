@@ -1,16 +1,6 @@
 import * as readline from "readline";
 import { decrypt_file, encrypt_file } from "./encryption";
 import { labyrinth_path } from "./labyrinth";
-import { labyrinth_navigator } from "./gameloop";
-import { List, list, to_string } from "../lib/list";
-import { error } from "console";
-import {ProbingHashtable, ch_delete, ch_insert, ph_empty, ph_keys, ch_lookup} from "../lib/hashtables";
-import { getHashTableFromFile, listToString } from "./stored_keys";
-
-const solution: List<number> = list();
-let key = "";
-const filename = "../tests/lorem_ipsum.txt";
-const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
 let rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
