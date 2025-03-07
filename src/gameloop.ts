@@ -33,9 +33,7 @@ export async function labyrinth_navigator(path: List<number>, size: number) {
     }
     rl.close();
     return key;
-}
-labyrinth_navigator(labyrinth_path(25), 25);
-    
+}   
 
 /**
  * Maps available choices to directional labels dynamically.

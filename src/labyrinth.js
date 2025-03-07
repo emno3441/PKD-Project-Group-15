@@ -18,6 +18,7 @@ function getRandomInt(min, max) {
 }
 /** Creates a path through the labyrinth
 * @param size the number of nodes
+* @precondition size > 2
 * @returns A list of numbers from 0 to end
 */
 function labyrinth_path(size) {
@@ -84,7 +85,7 @@ function labyrinth2(size, path) {
         var child = (0, list_1.head)(valid_node);
         valid_node = (0, list_1.tail)(valid_node);
         lab.adj[parent] = (0, list_1.is_null)(lab.adj[parent]) ? (0, list_1.list)(child) : (0, list_1.append)(lab.adj[parent], (0, list_1.list)(child));
-        lab.adj[parent] = shuffle(lab.adj[parent]);
+        lab.adj[parent] = shuffle(lab.adj[parent]); //shuffles the choices
         return;
     }
     //Function adds two child nodes to parent node
@@ -100,7 +101,7 @@ function labyrinth2(size, path) {
         var child2 = (0, list_1.head)(valid_node);
         valid_node = (0, list_1.tail)(valid_node);
         lab.adj[parent] = (0, list_1.is_null)(lab.adj[parent]) ? (0, list_1.list)(child1, child2) : (0, list_1.append)(lab.adj[parent], (0, list_1.list)(child1, child2));
-        lab.adj[parent] = shuffle(lab.adj[parent]);
+        lab.adj[parent] = shuffle(lab.adj[parent]); //shuffles the choices
         return;
     }
     var pending = (0, list_1.list)(0); //nodes to be proccesed
