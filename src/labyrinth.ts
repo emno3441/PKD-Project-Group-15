@@ -80,6 +80,9 @@ export function labyrinth2(size: number, path: List<number>): ListGraph {
                 return two_child(parent, lab, valid_node);
             }
         }
+        else {
+            return
+        }
     }
 
     //Function adds one child node to parent node

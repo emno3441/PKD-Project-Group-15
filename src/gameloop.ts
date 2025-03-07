@@ -3,7 +3,8 @@ import { List, head, is_null, length, tail, append, list } from "../lib/list";
 import * as readline from 'readline';
 import { ListGraph } from "../lib/graphs";
 
-/** Allows the user to navigate through the labyrinth using the terminal
+/** 
+ * Allows the user to navigate through the labyrinth using the terminal
 * @param size the size of the labyrinth
 * @param path A list of number which represent the way through the labyrinth
 * @returns the path through the labyrinth
