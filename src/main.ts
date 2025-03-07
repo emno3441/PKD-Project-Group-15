@@ -43,7 +43,7 @@ const selectedOption = await createMenu(options, "Welcome to Gameified Encryptio
           break;
       case "Decrypt File":
           console.log("Decrypting File...");
-          gameDecryption(labyrinth_navigator(solutionTest, 10));
+          gameDecryption(filename, labyrinth_navigator(solutionTest, 10));
           break;
       case "Cancel":
           console.log("Cancelling process...");

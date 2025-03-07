@@ -6,8 +6,6 @@ import { error } from "console";
 import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
 import { getHashTableFromFile, listToString } from "./stored_keys";
 
-const solutionTest = list(0, 2, 5, 7, 8, 9);
-const filename = "../../Code/PKD-Project-Group-15/tests/lorem_ipsum.txt";
 const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
 
 
@@ -23,7 +21,7 @@ export async function keyAsList(key: Promise<List<number>>): Promise<string> {
     }
 }
 
-export async function gameDecryption(list: Promise<List<number>>) {
+export async function gameDecryption(filename: string, list: Promise<List<number>>) {
     const key: Promise<List<number>> = Promise.resolve(list);
 
     try {
