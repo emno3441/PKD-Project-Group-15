@@ -2,20 +2,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createHash, createCipheriv, createDecipheriv, Decipher, Cipher, Hash, randomBytes, pbkdf2Sync} from 'node:crypto';
 import { Buffer } from 'node:buffer';
 
-/** Creates hash of password
- * @param {string} password - password
- * @returns {string} - hash of password
- */
-export function get_hash(password: string): string {
-    const hash: Hash = createHash('sha256');
-    
-    hash.update(password, 'utf-8');
-
-    const hashed_password: string = hash.digest('hex');
-
-    return hashed_password;
-}
-
 /** Encrypts file with algorithm aes-256-cbc, with salt as first 16 bytes
  * @param {string} filename - name of file to be encrypted
  * @param {string} password - hashed correct password to file
