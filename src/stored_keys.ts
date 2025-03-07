@@ -12,15 +12,6 @@ function simpleHash(str: string): number {
     return hash;
     }
 
-export function listToString(list: List<number>): string {
-    let str: string ="";
-    while (list !== null){
-      str+=head(list);
-      list = tail(list);
-      } 
-    return str;
-}
-   
 export function getHashTableFromFile(filename: string){
     let hashTable = readFile(filename, err => {
         if (err) {

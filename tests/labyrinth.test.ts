@@ -24,9 +24,11 @@ test('Labyrinth does not have multiple paths to exit', () => {
     const exit_to_begining: List<number> = reverse(path_to_exit);
     const labyrinth: ListGraph = generate_labyrinth(10, path_to_exit);
 
+
     if (!is_null(path_to_exit) && !is_null(exit_to_begining)) {
         const initial: number = head(path_to_exit);
         const end: number = head(exit_to_begining);
+
 
         expect(lg_find_multiple_paths(labyrinth, initial, end, path_to_exit)).toBe(true);
     } else {
