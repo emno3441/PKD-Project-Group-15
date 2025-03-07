@@ -9,11 +9,12 @@ async function main() {
 const options = ["Encrypt File", "Decrypt File", "Cancel"];
 const selectedOption = await createMenu(options, "Welcome to Gameified Encryption");
 
-  console.log(`You selected: ${selectedOption}`);
-  function createMenu(options: string[], question: string = "Choose an option:"): Promise<string> {
+
+console.log(`You selected: ${selectedOption}`);
+function createMenu(options: string[], question: string = "Choose an option:"): Promise<string> {
     const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
+    input: process.stdin,
+    output: process.stdout,
     });
 
     // Display the menu
@@ -35,23 +36,25 @@ const selectedOption = await createMenu(options, "Welcome to Gameified Encryptio
         });
     });
 }
-  // Perform actions based on the selected option
-  switch (selectedOption) {
-      case "Encrypt File":
-          console.log("Encrypting File...");
-          gameEncryption(filename, solutionTest)
-          break;
-      case "Decrypt File":
-          console.log("Decrypting File...");
-          gameDecryption(filename, labyrinth_navigator(solutionTest, 10));
-          break;
-      case "Cancel":
-          console.log("Cancelling process...");
-          break;
-      default:
-          console.log("Invalid option selected.");
-          break;
-  }
+
+// Perform actions based on the selected option
+switch (selectedOption) {
+    case "Encrypt File":
+        console.log("Encrypting File...");
+        gameEncryption(filename, solutionTest)
+        break;
+    case "Decrypt File":
+        console.log("Decrypting File...");
+        gameDecryption(filename, labyrinth_navigator(solutionTest, 10));
+        break;
+    case "Cancel":
+        console.log("Cancelling process...");
+        break;
+    default:
+        console.log("Invalid option selected.");
+        break;
+    }
 }
+
 
 main();
