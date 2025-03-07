@@ -8,7 +8,7 @@ import * as readline from 'readline';
 * @param path A list of number which represent the way through the labyrinth
 * @returns the path through the labyrinth
 */
-export async function labyrinth_navigator(path: List<number>, size: number) {
+export async function labyrinth_navigator(path: List<number>, size: number): Promise<List<number>> {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -30,9 +30,8 @@ export async function labyrinth_navigator(path: List<number>, size: number) {
         }
     }
     rl.close();
-    return key;
+    return key
 }
-labyrinth_navigator(labyrinth_path(25), 25);
     
 
 /**
@@ -42,7 +41,7 @@ labyrinth_navigator(labyrinth_path(25), 25);
  * @returns A list of direction labels (e.g., ["left"], ["left", "forward"], etc.).
  */
 function getDirectionLabels(choices: List<number>): List<string> {
-    const DIRECTION_LABELS = ["forward", "left", "right"];
+    const DIRECTION_LABELS = ["1", "2", "3"];
     let labels: List<string> = list();
     let optionList = choices;
     let index = 0;
