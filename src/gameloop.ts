@@ -15,7 +15,9 @@ export async function labyrinth_navigator(path: List<number>, size: number) {
     });
     const end: number = (size - 1);
     const key: List<number> = path
+
     const lab = generate_labyrinth(size, path); //Creates the labyrinth
+
     
     let current: number = 0;
 

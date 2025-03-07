@@ -17,6 +17,7 @@
   "directories": {},
   "scripts": {
     "build": "tsc",
+
     "start": "npm run build && electron ."
   },
   "repository": {

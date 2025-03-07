@@ -1,4 +1,5 @@
 import { List, list, append, is_null, head, tail, length, remove, enum_list } from "../lib/list";
+
 import { ListGraph, build_array } from "../lib/graphs";
 
 // taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
@@ -21,6 +22,7 @@ export function labyrinth_path(size: number): List<number> {
     while (start !== end) {
         if (start + 1 === end) {
             path = append(path, list(end));
+
             break;
         }
 
