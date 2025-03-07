@@ -8,7 +8,7 @@ import { ListGraph } from "../lib/graphs";
 * @param path A list of number which represent the way through the labyrinth
 * @returns the path through the labyrinth
 */
-export async function labyrinth_navigator(path: List<number>, size: number): List<number> {
+export async function labyrinth_navigator(path: List<number>, size: number) {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
