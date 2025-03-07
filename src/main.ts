@@ -1,5 +1,4 @@
 import * as readline from "readline";
-
 import { labyrinth_navigator } from "./gameloop";
 import { List, list } from "../lib/list";
 import { gameDecryption, gameEncryption } from "./main functions";
