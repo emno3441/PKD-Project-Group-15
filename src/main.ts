@@ -4,58 +4,59 @@ import { labyrinth_path } from "./labyrinth";
 import { labyrinth_navigator } from "./gameloop";
 import { List, list, to_string } from "../lib/list";
 import { error } from "console";
-import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
-import { getHashTableFromFile, listToString } from "./stored_keys";
+import { exit } from "process";
+import { gameDecryption, gameEncryption } from "./main functions";
+import { listToString } from "./stored_keys";
 
-const solution: List<number> = list(0, 2, 5, 7, 8, 9);
-let key = listToString(solution);
+const solutionTest: List<number> = list(0, 2, 5, 7, 8, 9);
 const filename = "../../Code/PKD-Project-Group-15/tests/lorem_ipsum.txt";
-const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
+async function main() {
+const options = ["Encrypt File", "Decrypt File", "Cancel"];
+const selectedOption = await createMenu(options, "Welcome to Gameified Encryption");
 
-let rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-//recursive function that repeats until the ask gets a valid answer in this case (e, d or c input)
-function ask() {
-  rl.question('Do you wish to encrypt or decrypt? \n[E] Encrypt \n[D] Decrypt \n[C] Cancel \n', (answer) => {
-    switch(answer.toLowerCase()) 
-    {
-      case 'e':
-          //function of encryption and interface goes here
-          //key = to_string(key);
-          encrypt_file(filename, key);
-          //ph_insert(hashtableOfPasswords, [filename, key], )
-          console.log('File Succesfully Encrypted');
-          process.exit();
-      case 'd':
-        //function of decryption and game interface goes here
-        //filename = openfilepath         //if (filename in ph_lookup(hashtableOfPasswords, filename)){
+  console.log(`You selected: ${selectedOption}`);
+  function createMenu(options: string[], question: string = "Choose an option:"): Promise<string> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
 
-          //insert gamelogic
-          //labyrinth_navigator(solution, 10);
-          key = listToString(solution); 
-          decrypt_file(filename, key);
-          console.log('File Succesfully Decrypted');
+    // Display the menu
+    console.log(question);
+    options.forEach((option, index) => {
+        console.log(`${index + 1}. ${option}`);
+    });
 
-        //}
-        //else {
-          //console.log('File not encrypted')
-        //}
-
-        process.exit();
-      case 'c':
-        //cancels the ask function
-        console.log('Process cancelled');
-        rl.close();
-        process.exit();
+    // Return a promise that resolves with the selected option
+    return new Promise((resolve) => {
+        rl.question("Press the number of your choice and hit Enter: ", (answer) => {
+            rl.close(); // Close the readline interface
+            const choice = parseInt(answer, 10); // Parse the input as a number
+            if (choice >= 1 && choice <= options.length) {
+                resolve(options[choice - 1]); // Resolve with the selected option
+            } else {
+                resolve("Invalid choice"); // Handle invalid input
+            }
+        });
+    });
+}
+  // Perform actions based on the selected option
+  switch (selectedOption) {
+      case "Encrypt File":
+          console.log("Encrypting File...");
+          gameEncryption(filename, solutionTest)
+          break;
+      case "Decrypt File":
+          console.log("Decrypting File...");
+          gameDecryption(labyrinth_navigator(solutionTest, 10));
+          break;
+      case "Cancel":
+          console.log("Cancelling process...");
+          break;
       default:
-        //continues the loop if e, d or c wasn't inputed
-        console.log('Invalid answer!');
-    }
-
-    ask();
-  });
+          console.log("Invalid option selected.");
+          break;
+  }
 }
 
-ask();
+main();
