@@ -67,7 +67,7 @@ export function undirected(el: EdgeList): EdgeList {
 }
 
 // Build an array based on a function computing the item at each index
-function build_array<T>(size: number, content: (i: number) => T): Array<T> {
+export function build_array<T>(size: number, content: (i: number) => T): Array<T> {
     const result = Array<T>(size);
     for (var i = 0; i < size; i = i + 1) {
         result[i] = content(i);

@@ -1,5 +1,5 @@
 import { Stack, push, top, empty, is_empty, pop} from "../lib/stack";
-import { labyrinth2, build_array, labyrinth_path } from "./labyrinth";
+import { generate_labyrinth, labyrinth_path } from "./labyrinth";
 import { List, head, is_null, length, tail, append, list } from "../lib/list";
 import * as readline from 'readline';
 
@@ -15,7 +15,9 @@ export async function labyrinth_navigator(path: List<number>, size: number): Pro
     });
     const end: number = (size - 1);
     const key: List<number> = path
-    const lab = labyrinth2(size, path); //Creates the labyrinth
+
+    const lab = generate_labyrinth(size, path); //Creates the labyrinth
+
     
     let current: number = 0;
 

@@ -1,4 +1,5 @@
 import * as readline from "readline";
+
 import { labyrinth_navigator } from "./gameloop";
 import { List, list } from "../lib/list";
 import { gameDecryption, gameEncryption } from "./main functions";
@@ -22,6 +23,7 @@ function createMenu(options: string[], question: string = "Choose an option:"): 
     options.forEach((option, index) => {
         console.log(`${index + 1}. ${option}`);
     });
+
 
     // Return a promise that resolves with the selected option
     return new Promise((resolve) => {
