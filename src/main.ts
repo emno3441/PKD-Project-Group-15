@@ -1,10 +1,13 @@
 import * as readline from "readline";
 import { labyrinth_navigator } from "./gameloop";
-import { List, list } from "../lib/list";
-import { gameDecryption, gameEncryption } from "./main functions";
+import { List, list, pair, tail, head } from "../lib/list";
+import { gameDecryption, gameEncryption, listToString } from "./main functions";
+import { hasValueInHashTable, readHashTableFromFile, updateHashTableInFile,  } from "./stored_keys";
+import { labyrinth_path } from "./labyrinth";
 
 const solutionTest: List<number> = list(0, 2, 5, 7, 8, 9);
 const filename = "../../Code/PKD-Project-Group-15/tests/lorem_ipsum.txt";
+const stored_keys = "./../PKD-Project-Group-15/stored_keys.txt";
 async function main() {
 const options = ["Encrypt File", "Decrypt File", "Cancel"];
 const selectedOption = await createMenu(options, "Welcome to Gameified Encryption");
@@ -42,11 +45,21 @@ function createMenu(options: string[], question: string = "Choose an option:"): 
 switch (selectedOption) {
     case "Encrypt File":
         console.log("Encrypting File...");
-        gameEncryption(filename, solutionTest)
+        let newKey = labyrinth_path(10);
+        gameEncryption(filename, newKey);
+        updateHashTableInFile(stored_keys, 10, listToString(newKey), pair(filename, newKey))
         break;
     case "Decrypt File":
-        console.log("Decrypting File...");
-        gameDecryption(filename, labyrinth_navigator(solutionTest, 10));
+        if hasValueInHashTable(stored_keys, 10, filename) === true {
+            console.log("Decrypting File...");
+            const fileAndKey: Pair<string, List<numbers>> = readHashTableFromFile(stored_keys, 10)
+            async () => {
+                const solvedkey = await labyrinth_navigator(tail(fileAndKey), 10)
+                gameDecryption(head(fileAndKey), tail(fileAndKey));
+            }
+        else {
+            console.log("Failed to find file in hashtable")
+        }
         break;
     case "Cancel":
         console.log("Cancelling process...");

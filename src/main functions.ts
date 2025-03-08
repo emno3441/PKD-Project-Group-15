@@ -3,13 +3,12 @@ import { labyrinth_path } from "./labyrinth";
 import { labyrinth_navigator } from "./gameloop";
 import { List, list, to_string, head, tail } from "../lib/list";
 import { error } from "console";
-import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
-import { getHashTableFromFile } from "./stored_keys";
-
-const hashtableOfPasswords = getHashTableFromFile("../stored_keys.txt")
+import { ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup } from "../lib/hashtables";
+import { writeHashTableToFile, } from "./stored_keys";
+const stored_keys = './../PKD-Project-Group-15/stored_keys.txt';
 
 // Converts list into string
-function listToString(list: List<number>): string {
+export function listToString(list: List<number>): string {
     let str: string ="";    
     while (list !== null){  // Iterates through all elements in list and adds it onto a "clean" string
       str+=head(list); 
