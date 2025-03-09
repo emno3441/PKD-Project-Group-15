@@ -1,19 +1,38 @@
-import {app, ipcMain, BrowserWindow} from "electron";
+import { app, BrowserWindow } from 'electron';
+import path from 'path';
 
-let mainWindow : BrowserWindow;
+let mainWindow: BrowserWindow;
 
-app.on("ready", createwindows);
-
-function createwindows (): void {
+function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 900,
+        width: 800,
         height: 600,
         webPreferences: {
-            preload: __dirname + "/preload.js"
+            preload: path.join(__dirname, 'main/preload.ts'), // Path to preload script
+            contextIsolation: true,
+            nodeIntegration: false,
         },
-        show: false
-    })
-    
-    mainWindow.loadFile("./index.html")
-    mainWindow.on("ready-to-show", () => mainWindow.show())
+    });
+
+    // Load the renderer's HTML file
+    mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
+
+    // Open DevTools (optional)
+    mainWindow.webContents.openDevTools();
 }
+
+app.whenReady().then(() => {
+    createWindow();
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
+    });
+});
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});

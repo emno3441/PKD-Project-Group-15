@@ -248,8 +248,7 @@ export function ph_insert<K, V>(ht: ProbingHashtable<K,V>, key: K, value: V): bo
         } else {
             ht.entries += 1;
         }
-        }
-
+    }
         ht.keys[idx] = key;
         ht.values[idx] = value;
         return true;
