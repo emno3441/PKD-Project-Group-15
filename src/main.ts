@@ -1,7 +1,7 @@
 import * as readline from "readline";
 import { labyrinth_navigator } from "./gameloop";
 import { List, list, pair, tail, head } from "../lib/list";
-import { gameDecryption, gameEncryption} from "./stored_keys";
+import { gameDecryption, gameEncryption} from "./logic";
 import { labyrinth_path } from "./labyrinth";
 import { ph_lookup } from "../lib/hashtables";
 import { dialog } from "electron";

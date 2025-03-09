@@ -1,11 +1,9 @@
 import { encrypt_file, decrypt_file } from "./encryption";
-import {readFile, writeFile} from "node:fs";
 import { List, length, head, tail, pair } from "../lib/list";
-import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup, HashFunction} from "../lib/hashtables";
+import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
 import { labyrinth_path } from "./labyrinth";
 import { console } from "node:inspector";
 import * as fs from 'fs';
-import * as path from 'path'
 import { labyrinth_navigator } from "./gameloop";
 
 // Converts list into string
@@ -34,19 +32,6 @@ function stringToNumberList(str: string): List<number> {
   return result;
 }
 
-// Converts list that gets outputed from labirynth_navigation to a string
-async function keyAsList(key: Promise<List<number>>): Promise<string> {
-    try {
-        const list = await key; // Waits for the promise to resolve
-        const resultString = numberListToString(list); // Convert the path list to a "clean" string
-        return resultString;
-    } 
-    catch (error) { // Throws error if something went wrong
-        console.error("Error converting list to string", error);
-        throw error;
-    }
-}
-
 function universalHash(key: any, size: number): number {
   const keyString = JSON.stringify(key);
   let hash = 0;
@@ -54,6 +39,41 @@ function universalHash(key: any, size: number): number {
       hash += keyString.charCodeAt(i);
   }
   return hash % size;
+}
+
+function ph_insert_with_resize<K, V>(ht: ProbingHashtable<K, V>, key: K, value: V): boolean {
+  // Check if the hashtable is too full (load factor >= 75%)
+  if (ht.entries >= ht.keys.length * 0.75) {
+      resizeAndRehash(ht);
+  }
+
+  // Insert the key-value pair
+  return ph_insert(ht, key, value);
+}
+
+
+function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
+  const oldKeys = ht.keys;
+  const oldValues = ht.values;
+
+  // Double the size of the hashtable
+  const newSize = ht.keys.length * 2;
+  const newHashtable = ph_empty<K, V>(newSize, ht.hash);
+
+  // Rehash all existing keys and values into the new hashtable
+  for (let i = 0; i < oldKeys.length; i++) {
+      const key = oldKeys[i];
+      if (key !== null && key !== undefined) {
+          ph_insert(newHashtable, key, oldValues[i]!);
+      }
+  }
+
+  // Replace the old hashtable with the new one
+  ht.keys = newHashtable.keys;
+  ht.values = newHashtable.values;
+  ht.entries = newHashtable.entries;
+
+  console.log(`Resized and rehashed hashtable to new size: ${newSize}`);
 }
 
 function readHashTableFromFile<K, V>(
@@ -98,13 +118,7 @@ function readHashTableFromFile<K, V>(
   }
 }
 
-/**
-* Writes a probing hashtable to a .txt file.
-* @template K the type of keys
-* @template V the type of values
-* @param filename the name of the file to write to
-* @param hashtable the probing hashtable to write
-*/
+
 function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtable<K, V>): void {
   try {
       // Convert the hashtable to a JSON string with proper formatting
@@ -130,66 +144,6 @@ function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtabl
   }
 }
 
-/**
-* Inserts a key-value pair into a probing hashtable.
-* Automatically resizes and rehashes the table if it gets too full.
-* @template K the type of keys
-* @template V the type of values
-* @param ht the hash table
-* @param key the key to insert
-* @param value the value to insert
-* @returns true iff the insertion succeeded
-*/
-function ph_insert_with_resize<K, V>(ht: ProbingHashtable<K, V>, key: K, value: V): boolean {
-  // Check if the hashtable is too full (load factor >= 75%)
-  if (ht.entries >= ht.keys.length * 0.75) {
-      resizeAndRehash(ht);
-  }
-
-  // Insert the key-value pair
-  return ph_insert(ht, key, value);
-}
-
-/**
-* Resizes and rehashes the probing hashtable.
-* @template K the type of keys
-* @template V the type of values
-* @param ht the hash table to resize and rehash
-*/
-function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
-  const oldKeys = ht.keys;
-  const oldValues = ht.values;
-
-  // Double the size of the hashtable
-  const newSize = ht.keys.length * 2;
-  const newHashtable = ph_empty<K, V>(newSize, ht.hash);
-
-  // Rehash all existing keys and values into the new hashtable
-  for (let i = 0; i < oldKeys.length; i++) {
-      const key = oldKeys[i];
-      if (key !== null && key !== undefined) {
-          ph_insert(newHashtable, key, oldValues[i]!);
-      }
-  }
-
-  // Replace the old hashtable with the new one
-  ht.keys = newHashtable.keys;
-  ht.values = newHashtable.values;
-  ht.entries = newHashtable.entries;
-
-  console.log(`Resized and rehashed hashtable to new size: ${newSize}`);
-}
-
-/**
-* Reads a hashtable from a file, inserts a key-value pair, and writes the updated hashtable back to the file.
-* Uses the universal hash function for hashing keys.
-* @template K the type of keys
-* @template V the type of values
-* @param filename the name of the file
-* @param size the size of the hashtable (if a new one needs to be created)
-* @param key the key to insert
-* @param value the value to insert
-*/
 function updateHashTableInFile<K, V>(
   filename: string,
   size: number,
@@ -209,16 +163,6 @@ function updateHashTableInFile<K, V>(
   writeHashTableToFile(filename, hashtable);
 }
 
-/**
- * Reads a hashtable from a file, removes a key-value pair, and writes the updated hashtable back to the file.
- * Uses the universal hash function for hashing keys.
- * @template K the type of keys
- * @template V the type of values
- * @param filename the name of the file
- * @param size the size of the hashtable (if a new one needs to be created)
- * @param key the key to remove
- * @returns the value associated with the key, or undefined if the key does not exist
- */
 function removeFromHashTableInFile<K, V>(
   filename: string,
   size: number,
@@ -235,7 +179,6 @@ function removeFromHashTableInFile<K, V>(
 
   return
 }
-
 
 export async function gameEncryption(filename: string, stored_keys: string) {
   try {
