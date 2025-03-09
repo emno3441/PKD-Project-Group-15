@@ -76,10 +76,7 @@ function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
   console.log(`Resized and rehashed hashtable to new size: ${newSize}`);
 }
 
-function readHashTableFromFile<K, V>(
-  filename: string,
-  size: number
-): ProbingHashtable<K, V> {
+function readHashTableFromFile<K, V>(filename: string, size: number): ProbingHashtable<K, V> {
   try {
       console.log(`Attempting to read file: ${filename}`);
       
@@ -144,12 +141,7 @@ function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtabl
   }
 }
 
-function updateHashTableInFile<K, V>(
-  filename: string,
-  size: number,
-  key: K,
-  value: List<number> // Change the type to List<number>
-): void {
+function updateHashTableInFile<K, V>(filename: string, size: number, key: K, value: List<number>): void {  // Change the type to List<number>
   // Read the hashtable from the file (or create a new one if the file is empty)
   const hashtable = readHashTableFromFile<K, string>(filename, size); // Change V to string
 
@@ -180,33 +172,55 @@ function removeFromHashTableInFile<K, V>(
   return
 }
 
-export async function gameEncryption(filename: string, stored_keys: string) {
+/**
+ * Encrypts a file and stores the encryption key in a hashtable.
+ * @template K The type of the key in the hashtable (e.g., string).
+ * @template V The type of the value in the hashtable (e.g., string).
+ * @param filename The name of the file to encrypt.
+ * @param stored_keys The filename of the hashtable storing the encryption keys.
+ * @param size The size of the hashtable (if a new one needs to be created).
+ */
+export async function gameEncryption<K, V>(filename: string, stored_keys: string, size: number): Promise<void> {
   try {
-      const validKey = labyrinth_path(10);
-      const key = numberListToString(validKey); // Makes validpath into key as string
-      encrypt_file(filename, key); // Encrypts the file using string as key
-      updateHashTableInFile(stored_keys, 10, filename, validKey); // Store the key in the hashtable
-      console.log('File Succesfully Encrypted');
-  }
-  catch (error) { // Throws error if something went wrong
-      console.error("Error encrypting file", error);
-      throw error; 
-  }
-};
+    // Generate a valid key using labyrinth_path
+    const validKey = labyrinth_path(10);
 
-// Handles the decryption of file with input of labyrinth_navigation
-// Handles the decryption of file with input of labyrinth_navigation
-export async function gameDecryption(filename: string, stored_keys: string) {
+    // Convert the key (List<number>) to a string
+    const key = numberListToString(validKey);
+
+    // Encrypt the file using the key
+    encrypt_file(filename, key);
+
+    // Store the key in the hashtable
+    updateHashTableInFile<K, V>(stored_keys, size, filename as K, validKey);
+
+    console.log('File successfully encrypted.');
+  } catch (error) {
+    // Handle errors and provide meaningful error messages
+    console.error("Error encrypting file:", error);
+    throw error;
+  }
+}
+
+/**
+ * Decrypts a file using the key stored in a hashtable and removes the key-value pair after decryption.
+ * @template K The type of the key in the hashtable (e.g., string).
+ * @template V The type of the value in the hashtable (e.g., string).
+ * @param filename The name of the file to decrypt.
+ * @param stored_keys The filename of the hashtable storing the encryption keys.
+ * @param size The size of the hashtable (if a new one needs to be created).
+ */
+export async function gameDecryption<K, V>( filename: string, stored_keys: string, size: number): Promise<void> {
   try {
     // Read the hashtable from the file
-    const hashtable = readHashTableFromFile<string, string>(stored_keys, 10);
+    const hashtable = readHashTableFromFile<K, V>(stored_keys, size);
 
     // Check if the filename exists as a key in the hashtable
-    const passwordToFile = ph_lookup(hashtable, filename);
+    const passwordToFile = ph_lookup(hashtable, filename as K);
 
     if (passwordToFile !== undefined) {
       // Convert the password string to a list of numbers
-      const passwordPath = stringToNumberList(passwordToFile);
+      const passwordPath = stringToNumberList(passwordToFile as string);
 
       // Use the labyrinth_navigator to get the key (as a Promise<List<number>>)
       const keyPromise = labyrinth_navigator(passwordPath, 10);
@@ -223,7 +237,7 @@ export async function gameDecryption(filename: string, stored_keys: string) {
       console.log("File decrypted successfully.");
 
       // Remove the key-value pair from the hashtable since decryption succeeded
-      removeFromHashTableInFile(stored_keys, 10, filename);
+      removeFromHashTableInFile<K, V>(stored_keys, size, filename as K);
 
       console.log("Key-value pair removed from the hashtable.");
     } else {

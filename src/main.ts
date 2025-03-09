@@ -72,7 +72,7 @@ async function main() {
                 const fileToEncrypt = await askFilePath(); // Open file dialog to select a file
                 console.log(`Selected file: ${fileToEncrypt}`);
                 console.log("Encrypting File...");
-                await gameEncryption(fileToEncrypt, stored_keys); // Encrypt the file (await for completion)
+                await gameEncryption(fileToEncrypt, stored_keys, 10); // Encrypt the file (await for completion)
             } catch (error) {
                 console.error("Error during encryption:", error);
             }
@@ -83,7 +83,7 @@ async function main() {
                 const fileToDecrypt = await askFilePath(); // Open file dialog to select a file
                 console.log(`Selected file: ${fileToDecrypt}`);
                 console.log("Decrypting File...");
-                await gameDecryption(fileToDecrypt, stored_keys)
+                await gameDecryption(fileToDecrypt, stored_keys, 10)
             } catch (error) {
                 console.error("Error during decryption:", error);
             }
