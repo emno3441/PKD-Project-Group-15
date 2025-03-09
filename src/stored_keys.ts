@@ -6,9 +6,10 @@ import { labyrinth_path } from "./labyrinth";
 import { console } from "node:inspector";
 import * as fs from 'fs';
 import * as path from 'path'
+import { labyrinth_navigator } from "./gameloop";
 
 // Converts list into string
-export function listToString(list: List<number>): string {
+function numberListToString(list: List<number>): string {
     let str: string ="";    
     while (list !== null){  // Iterates through all elements in list and adds it onto a "clean" string
       str+=head(list); 
@@ -17,22 +18,27 @@ export function listToString(list: List<number>): string {
     return str; //returns the clean string
 }
 
-export function stringToList(str: string): List<string> {
-  let result: List<string> = null; // Start with an empty list
+function stringToNumberList(str: string): List<number> {
+  let result: List<number> = null; // Start with an empty list
 
   // Iterate through the string in reverse order and build the list
   for (let i = str.length - 1; i >= 0; i--) {
-      result = pair(str[i], result); // Add each character to the front of the list
+    const char = str[i];
+    if (!isNaN(Number(char))) { // Ensure the character is a valid number
+      result = pair(Number(char), result); // Add the number to the front of the list
+    } else {
+      throw new Error(`Invalid character in input string: ${char}. Expected a number.`);
+    }
   }
 
   return result;
 }
 
 // Converts list that gets outputed from labirynth_navigation to a string
-export async function keyAsList(key: Promise<List<number>>): Promise<string> {
+async function keyAsList(key: Promise<List<number>>): Promise<string> {
     try {
         const list = await key; // Waits for the promise to resolve
-        const resultString = listToString(list); // Convert the path list to a "clean" string
+        const resultString = numberListToString(list); // Convert the path list to a "clean" string
         return resultString;
     } 
     catch (error) { // Throws error if something went wrong
@@ -41,35 +47,7 @@ export async function keyAsList(key: Promise<List<number>>): Promise<string> {
     }
 }
 
-// Handles the decryption of file with input of labirynth_navigation
-export async function gameDecryption(filename: string, list: Promise<List<number>>) {
-    const inputstring: Promise<List<number>> = Promise.resolve(list); // Creates a promise to resolve
-
-    try {
-        const key = await keyAsList(inputstring); // waits to get the resolved string 
-        decrypt_file(filename, key); // Decrypts the file using string as key
-        console.log('File Succesfully Decrypted');
-    } 
-    catch (error) { // Throws error if something went wrong
-        console.error("Error turning labyrinth solution into key", error);
-        throw error; 
-    }
-};
-
-// Handles the encryption of file with input of labirynth_path
-export async function gameEncryption(filename: string, validKey: List<number>) {
-    try {
-        const key = listToString(validKey); // Makes validpath into key as string
-        encrypt_file(filename, key); // Encrypts the file using string as key
-        console.log('File Succesfully Encrypted');
-    }
-    catch (error) { // Throws error if something went wrong
-        console.error("Error encrypting file", error);
-        throw error; 
-    }
-};
-
-export function universalHash(key: any, size: number): number {
+function universalHash(key: any, size: number): number {
   const keyString = JSON.stringify(key);
   let hash = 0;
   for (let i = 0; i < keyString.length; i++) {
@@ -78,7 +56,7 @@ export function universalHash(key: any, size: number): number {
   return hash % size;
 }
 
-export function readHashTableFromFile<K, V>(
+function readHashTableFromFile<K, V>(
   filename: string,
   size: number
 ): ProbingHashtable<K, V> {
@@ -127,7 +105,7 @@ export function readHashTableFromFile<K, V>(
 * @param filename the name of the file to write to
 * @param hashtable the probing hashtable to write
 */
-export function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtable<K, V>): void {
+function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtable<K, V>): void {
   try {
       // Convert the hashtable to a JSON string with proper formatting
       const data = JSON.stringify(
@@ -162,7 +140,7 @@ export function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingH
 * @param value the value to insert
 * @returns true iff the insertion succeeded
 */
-export function ph_insert_with_resize<K, V>(ht: ProbingHashtable<K, V>, key: K, value: V): boolean {
+function ph_insert_with_resize<K, V>(ht: ProbingHashtable<K, V>, key: K, value: V): boolean {
   // Check if the hashtable is too full (load factor >= 75%)
   if (ht.entries >= ht.keys.length * 0.75) {
       resizeAndRehash(ht);
@@ -212,7 +190,7 @@ function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
 * @param key the key to insert
 * @param value the value to insert
 */
-export function updateHashTableInFile<K, V>(
+function updateHashTableInFile<K, V>(
   filename: string,
   size: number,
   key: K,
@@ -222,7 +200,7 @@ export function updateHashTableInFile<K, V>(
   const hashtable = readHashTableFromFile<K, string>(filename, size); // Change V to string
 
   // Convert the list value to a string before insertion
-  const valueString = listToString(value);
+  const valueString = numberListToString(value);
 
   // Insert the new key-value pair (with automatic resizing and rehashing)
   ph_insert_with_resize(hashtable, key, valueString);
@@ -241,39 +219,76 @@ export function updateHashTableInFile<K, V>(
  * @param key the key to remove
  * @returns the value associated with the key, or undefined if the key does not exist
  */
-export function removeFromHashTableInFile<K, V>(
+function removeFromHashTableInFile<K, V>(
   filename: string,
   size: number,
   key: K
-): List<unknown> | undefined { // Change the return type to List<number>
+): void { // Change the return type to List<number>
   // Read the hashtable from the file (or create a new one if the file is empty)
   const hashtable = readHashTableFromFile<K, string>(filename, size); // Change V to string
 
   // Remove the key-value pair
-  const valueString = ph_delete(hashtable, key);
+  ph_delete(hashtable, key);
 
   // Write the updated hashtable back to the file
   writeHashTableToFile(filename, hashtable);
 
-  // Convert the string value back to a list before returning
-  return valueString ? stringToList(valueString) : undefined;
+  return
 }
 
-export function hasValueInHashTable<K, V>(
-  filename: string,
-  size: number,
-  value: V
-): boolean {
-  // Read the hashtable from the file (or create a new one if the file is empty)
-  const hashtable = readHashTableFromFile<K, V>(filename, size);
 
-  // Iterate through all keys in the hashtable
-  for (const key of ph_keys(hashtable)!) {
-    // Check if the retrieved value matches the target value
-    if (filename === key) {
-      return true; // Value found
-    }
+export async function gameEncryption(filename: string, stored_keys: string) {
+  try {
+      const validKey = labyrinth_path(10);
+      const key = numberListToString(validKey); // Makes validpath into key as string
+      encrypt_file(filename, key); // Encrypts the file using string as key
+      updateHashTableInFile(stored_keys, 10, filename, validKey); // Store the key in the hashtable
+      console.log('File Succesfully Encrypted');
   }
+  catch (error) { // Throws error if something went wrong
+      console.error("Error encrypting file", error);
+      throw error; 
+  }
+};
 
-  return false; // Value not found
+// Handles the decryption of file with input of labyrinth_navigation
+// Handles the decryption of file with input of labyrinth_navigation
+export async function gameDecryption(filename: string, stored_keys: string) {
+  try {
+    // Read the hashtable from the file
+    const hashtable = readHashTableFromFile<string, string>(stored_keys, 10);
+
+    // Check if the filename exists as a key in the hashtable
+    const passwordToFile = ph_lookup(hashtable, filename);
+
+    if (passwordToFile !== undefined) {
+      // Convert the password string to a list of numbers
+      const passwordPath = stringToNumberList(passwordToFile);
+
+      // Use the labyrinth_navigator to get the key (as a Promise<List<number>>)
+      const keyPromise = labyrinth_navigator(passwordPath, 10);
+
+      // Wait for the key (List<number>) to be resolved
+      const key = await keyPromise;
+
+      // Convert the key (List<number>) to a string
+      const password = numberListToString(key);
+
+      // Decrypt the file using the password
+      decrypt_file(filename, password);
+
+      console.log("File decrypted successfully.");
+
+      // Remove the key-value pair from the hashtable since decryption succeeded
+      removeFromHashTableInFile(stored_keys, 10, filename);
+
+      console.log("Key-value pair removed from the hashtable.");
+    } else {
+      console.log("Failed to find file in table of encrypted files.");
+    }
+  } catch (error) {
+    // Handle errors and provide meaningful error messages
+    console.error("Error during decryption process:", error);
+    throw error;
+  }
 }

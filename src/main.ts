@@ -1,8 +1,7 @@
 import * as readline from "readline";
 import { labyrinth_navigator } from "./gameloop";
 import { List, list, pair, tail, head } from "../lib/list";
-import { gameDecryption, gameEncryption, listToString } from "./functions_for_main"; // Fixed import name
-import { hasValueInHashTable, readHashTableFromFile, updateHashTableInFile } from "./stored_keys";
+import { gameDecryption, gameEncryption} from "./stored_keys";
 import { labyrinth_path } from "./labyrinth";
 import { ph_lookup } from "../lib/hashtables";
 import { dialog } from "electron";
@@ -73,10 +72,7 @@ async function main() {
                 const fileToEncrypt = await askFilePath(); // Open file dialog to select a file
                 console.log(`Selected file: ${fileToEncrypt}`);
                 console.log("Encrypting File...");
-                const newKey = labyrinth_path(10); // Generate a new key
-                await gameEncryption(fileToEncrypt, newKey); // Encrypt the file (await for completion)
-                updateHashTableInFile(stored_keys, 10, fileToEncrypt, newKey); // Store the key in the hashtable
-                console.log("File encrypted successfully.");
+                await gameEncryption(fileToEncrypt, stored_keys); // Encrypt the file (await for completion)
             } catch (error) {
                 console.error("Error during encryption:", error);
             }
@@ -86,22 +82,8 @@ async function main() {
             try {
                 const fileToDecrypt = await askFilePath(); // Open file dialog to select a file
                 console.log(`Selected file: ${fileToDecrypt}`);
-
-                if (hasValueInHashTable(stored_keys, 10, fileToDecrypt)) {
-                    console.log("Decrypting File...");
-                    const hashtable = readHashTableFromFile(stored_keys, 10); // Read the hashtable from the file
-                    const passwordToFile: any = ph_lookup(hashtable, fileToDecrypt); // Look up the key for the file
-
-                    if (passwordToFile !== undefined) {
-                        // Decrypt the file using the retrieved key (await for completion)
-                        await gameDecryption(fileToDecrypt, labyrinth_navigator(passwordToFile, 10));
-                        console.log("File decrypted successfully.");
-                    } else {
-                        console.log("Failed to retrieve the key for the file.");
-                    }
-                } else {
-                    console.log("Failed to find file in table of encrypted files.");
-                }
+                console.log("Decrypting File...");
+                await gameDecryption(fileToDecrypt, stored_keys)
             } catch (error) {
                 console.error("Error during decryption:", error);
             }
