@@ -1,15 +1,21 @@
 import { ipcRenderer } from 'electron';
 import { gameEncryption, gameDecryption } from './logic';
 
-// Add event listeners to the buttons
 document.getElementById('encrypt-btn')?.addEventListener('click', async () => {
     console.log('Encrypt button clicked'); // Debugging
     try {
-        const filePath = await ipcRenderer.invoke('open-file-dialog');
+        const filePath = await ipcRenderer.invoke('open-file-dialog', {
+            title: 'Select a file to encrypt', // Custom dialog title
+            filters: [
+                { name: 'All Files', extensions: ['*'] }, // File filters
+            ],
+        });
+        console.log('File path selected:', filePath); // Debugging
         if (filePath) {
-            console.log('Selected file:', filePath); // Debugging
             await gameEncryption(filePath, './stored_keys.json', 10);
             alert('File encrypted successfully!');
+        } else {
+            console.log('No file selected.'); // Debugging
         }
     } catch (error) {
         console.error('Error during encryption:', error); // Debugging
@@ -20,11 +26,18 @@ document.getElementById('encrypt-btn')?.addEventListener('click', async () => {
 document.getElementById('decrypt-btn')?.addEventListener('click', async () => {
     console.log('Decrypt button clicked'); // Debugging
     try {
-        const filePath = await ipcRenderer.invoke('open-file-dialog');
+        const filePath = await ipcRenderer.invoke('open-file-dialog', {
+            title: 'Select a file to decrypt', // Custom dialog title
+            filters: [
+                { name: 'All Files', extensions: ['*'] }, // File filters
+            ],
+        });
+        console.log('File path selected:', filePath); // Debugging
         if (filePath) {
-            console.log('Selected file:', filePath); // Debugging
             await gameDecryption(filePath, './stored_keys.json', 10);
             alert('File decrypted successfully!');
+        } else {
+            console.log('No file selected.'); // Debugging
         }
     } catch (error) {
         console.error('Error during decryption:', error); // Debugging
