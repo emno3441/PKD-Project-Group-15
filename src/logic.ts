@@ -180,25 +180,20 @@ function removeFromHashTableInFile<K, V>(
  * @param stored_keys The filename of the hashtable storing the encryption keys.
  * @param size The size of the hashtable (if a new one needs to be created).
  */
-export async function gameEncryption<K, V>(filename: string, stored_keys: string, size: number): Promise<void> {
+export async function gameEncryption(filename: string, stored_keys: string, size: number): Promise<void> {
   try {
-    // Generate a valid key using labyrinth_path
-    const validKey = labyrinth_path(10);
-
-    // Convert the key (List<number>) to a string
-    const key = numberListToString(validKey);
-
-    // Encrypt the file using the key
-    encrypt_file(filename, key);
-
-    // Store the key in the hashtable
-    updateHashTableInFile<K, V>(stored_keys, size, filename as K, validKey);
-
-    console.log('File successfully encrypted.');
+      const validKey = labyrinth_path(size);
+      const key = numberListToString(validKey);
+      encrypt_file(filename, key);
+      updateHashTableInFile(stored_keys, size, filename, validKey);
+      console.log('File successfully encrypted.');
   } catch (error) {
-    // Handle errors and provide meaningful error messages
-    console.error("Error encrypting file:", error);
-    throw error;
+      if (error instanceof Error) {
+          console.error("Error encrypting file:", error.message);
+      } else {
+          console.error("An unknown error occurred during encryption:", error);
+      }
+      throw error; // Re-throw the error if needed
   }
 }
 
@@ -210,42 +205,27 @@ export async function gameEncryption<K, V>(filename: string, stored_keys: string
  * @param stored_keys The filename of the hashtable storing the encryption keys.
  * @param size The size of the hashtable (if a new one needs to be created).
  */
-export async function gameDecryption<K, V>( filename: string, stored_keys: string, size: number): Promise<void> {
+export async function gameDecryption(filename: string, stored_keys: string, size: number): Promise<void> {
   try {
-    // Read the hashtable from the file
-    const hashtable = readHashTableFromFile<K, V>(stored_keys, size);
-
-    // Check if the filename exists as a key in the hashtable
-    const passwordToFile = ph_lookup(hashtable, filename as K);
-
-    if (passwordToFile !== undefined) {
-      // Convert the password string to a list of numbers
-      const passwordPath = stringToNumberList(passwordToFile as string);
-
-      // Use the labyrinth_navigator to get the key (as a Promise<List<number>>)
-      const keyPromise = labyrinth_navigator(passwordPath, 10);
-
-      // Wait for the key (List<number>) to be resolved
-      const key = await keyPromise;
-
-      // Convert the key (List<number>) to a string
-      const password = numberListToString(key);
-
-      // Decrypt the file using the password
-      decrypt_file(filename, password);
-
-      console.log("File decrypted successfully.");
-
-      // Remove the key-value pair from the hashtable since decryption succeeded
-      removeFromHashTableInFile<K, V>(stored_keys, size, filename as K);
-
-      console.log("Key-value pair removed from the hashtable.");
-    } else {
-      console.log("Failed to find file in table of encrypted files.");
-    }
+      const hashtable = readHashTableFromFile(stored_keys, size);
+      const passwordToFile = ph_lookup(hashtable, filename);
+      if (passwordToFile !== undefined) {
+          const passwordPath = stringToNumberList(passwordToFile as string);
+          const key = await labyrinth_navigator(passwordPath, size);
+          const password = numberListToString(key);
+          decrypt_file(filename, password);
+          console.log("File decrypted successfully.");
+          removeFromHashTableInFile(stored_keys, size, filename);
+          console.log("Key-value pair removed from the hashtable.");
+      } else {
+          console.log("Failed to find file in table of encrypted files.");
+      }
   } catch (error) {
-    // Handle errors and provide meaningful error messages
-    console.error("Error during decryption process:", error);
-    throw error;
+      if (error instanceof Error) {
+          console.error("Error during decryption process:", error.message);
+      } else {
+          console.error("An unknown error occurred during decryption:", error);
+      }
+      throw error; // Re-throw the error if needed
   }
 }
