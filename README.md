@@ -1,4 +1,4 @@
-Stating the program
+Starting the program
 ----------------
 - npm install
 - npm build
