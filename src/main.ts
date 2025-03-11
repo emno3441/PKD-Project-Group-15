@@ -1,10 +1,5 @@
 import * as readline from "readline";
-import { labyrinth_navigator } from "./gameloop";
-import { List, list, pair, tail, head } from "../lib/list";
 import { gameDecryption, gameEncryption} from "./logic";
-import { labyrinth_path } from "./labyrinth";
-import { ph_lookup } from "../lib/hashtables";
-import { dialog } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -12,12 +7,8 @@ import * as fs from "fs";
 const stored_keys = "./../PKD-Project-Group-15/stored_keys.json";
 const options = ["Encrypt File", "Decrypt File", "Cancel"];
 
-/**
- * Creates a menu and prompts the user to select an option.
- * @param options The list of options to display.
- * @param question The question to ask the user.
- * @returns A promise that resolves to the selected option.
- */
+
+ //Creates a menu and prompts the user to select an option.
 function createMenu(options: string[], question: string = "Choose an option:"): Promise<string> {
     const rl = readline.createInterface({
         input: process.stdin,

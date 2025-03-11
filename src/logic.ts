@@ -1,251 +1,183 @@
-import { encrypt_file, decrypt_file } from "./encryption";
-import { List, length, head, tail, pair } from "../lib/list";
-import {ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup} from "../lib/hashtables";
-import { labyrinth_path } from "./labyrinth";
-import { console } from "node:inspector";
+import { encrypt_file, decrypt_file } from './encryption';
+import { List, length, head, tail, pair, is_null } from '../lib/list';
+import { ProbingHashtable, ph_delete, ph_insert, ph_empty, ph_keys, ph_lookup } from '../lib/hashtables';
+import { labyrinth_path } from './labyrinth';
 import * as fs from 'fs';
-import { labyrinth_navigator } from "./gameloop";
+import { labyrinth_navigator } from './gameloop';
 
-// Converts list into string
-function numberListToString(list: List<number>): string {
-    let str: string ="";    
-    while (list !== null){  // Iterates through all elements in list and adds it onto a "clean" string
-      str+=head(list); 
-      list = tail(list);
-      } 
-    return str; //returns the clean string
-}
-
-function stringToNumberList(str: string): List<number> {
-  let result: List<number> = null; // Start with an empty list
-
-  // Iterate through the string in reverse order and build the list
-  for (let i = str.length - 1; i >= 0; i--) {
-    const char = str[i];
-    if (!isNaN(Number(char))) { // Ensure the character is a valid number
-      result = pair(Number(char), result); // Add the number to the front of the list
-    } else {
-      throw new Error(`Invalid character in input string: ${char}. Expected a number.`);
+// Converts a list of numbers into a string
+export function numberListToString(list: List<number>): string {
+    let str: string = '';
+    while (!is_null(list)) {
+        str += head(list);
+        list = tail(list);
     }
-  }
-
-  return result;
+    return str;
 }
 
-function universalHash(key: any, size: number): number {
-  const keyString = JSON.stringify(key);
-  let hash = 0;
-  for (let i = 0; i < keyString.length; i++) {
-      hash += keyString.charCodeAt(i);
-  }
-  return hash % size;
+// Converts a string into a list of numbers
+export function stringToNumberList(str: string): List<number> {
+    let result: List<number> = null;
+    for (let i = str.length - 1; i >= 0; i--) {
+        const char = str[i];
+        if (!isNaN(Number(char))) {
+            result = pair(Number(char), result);
+        } else {
+            throw new Error(`Invalid character in input string: ${char}. Expected a number.`);
+        }
+    }
+    return result;
 }
 
-function ph_insert_with_resize<K, V>(ht: ProbingHashtable<K, V>, key: K, value: V): boolean {
-  // Check if the hashtable is too full (load factor >= 75%)
-  if (ht.entries >= ht.keys.length * 0.75) {
-      resizeAndRehash(ht);
-  }
-
-  // Insert the key-value pair
-  return ph_insert(ht, key, value);
+// Universal hash function
+export function universalHash(key: any, size: number): number {
+    const keyString = JSON.stringify(key);
+    let hash = 0;
+    for (let i = 0; i < keyString.length; i++) {
+        hash += keyString.charCodeAt(i);
+    }
+    return hash % size;
 }
 
-
-function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
-  const oldKeys = ht.keys;
-  const oldValues = ht.values;
-
-  // Double the size of the hashtable
-  const newSize = ht.keys.length * 2;
-  const newHashtable = ph_empty<K, V>(newSize, ht.hash);
-
-  // Rehash all existing keys and values into the new hashtable
-  for (let i = 0; i < oldKeys.length; i++) {
-      const key = oldKeys[i];
-      if (key !== null && key !== undefined) {
-          ph_insert(newHashtable, key, oldValues[i]!);
-      }
-  }
-
-  // Replace the old hashtable with the new one
-  ht.keys = newHashtable.keys;
-  ht.values = newHashtable.values;
-  ht.entries = newHashtable.entries;
-
-  console.log(`Resized and rehashed hashtable to new size: ${newSize}`);
+// Inserts a key-value pair into the hashtable with resizing
+export function ph_insert_with_resize<K, V>(ht: ProbingHashtable<K, V>, key: K, value: V): boolean {
+    if (ht.entries >= ht.keys.length * 0.75) {
+        resizeAndRehash(ht);
+    }
+    return ph_insert(ht, key, value);
 }
 
-function readHashTableFromFile<K, V>(filename: string, size: number): ProbingHashtable<K, V> {
-  try {
-      console.log(`Attempting to read file: ${filename}`);
-      
-      // Check if the file exists and is not empty
-      if (!fs.existsSync(filename)) {
-          console.log(`File ${filename} does not exist. Creating a new empty hashtable.`);
-          return ph_empty<K, V>(size, (key: K) => universalHash(key, size));
-      }
+// Resizes and rehashes the hashtable
+export function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
+    const oldKeys = ht.keys;
+    const oldValues = ht.values;
+    const newSize = ht.keys.length * 2;
+    const newHashtable = ph_empty<K, V>(newSize, ht.hash);
 
-      const fileContent = fs.readFileSync(filename, 'utf-8');
-      if (fileContent.trim() === '') {
-          console.log(`File ${filename} is empty. Creating a new empty hashtable.`);
-          return ph_empty<K, V>(size, (key: K) => universalHash(key, size));
-      }
+    for (let i = 0; i < oldKeys.length; i++) {
+        const key = oldKeys[i];
+        if (key !== null && key !== undefined) {
+            ph_insert(newHashtable, key, oldValues[i]!);
+        }
+    }
 
-      console.log(`File content: ${fileContent}`);
-
-      // Parse the JSON string back into an object
-      const parsedData = JSON.parse(fileContent);
-      console.log(`Parsed data: ${JSON.stringify(parsedData, null, 2)}`);
-
-      // Reconstruct the hashtable
-      const hashtable: ProbingHashtable<K, V> = {
-          keys: parsedData.keys,
-          values: parsedData.values,
-          hash: (key: K) => universalHash(key, size), // Use the universal hash function
-          entries: parsedData.entries
-      };
-
-      console.log(`Hashtable read from ${filename}`);
-      return hashtable;
-  } catch (error) {
-      console.error(`Error reading file ${filename}:`, error);
-      console.log('Creating a new empty hashtable due to error.');
-      return ph_empty<K, V>(size, (key: K) => universalHash(key, size));
-  }
+    ht.keys = newHashtable.keys;
+    ht.values = newHashtable.values;
+    ht.entries = newHashtable.entries;
+    console.log(`Resized and rehashed hashtable to new size: ${newSize}`);
 }
 
+// Reads a hashtable from a .json file
+export function readHashTableFromFile<K, V>(filename: string, size: number): ProbingHashtable<K, V> {
+    try {
+        if (!fs.existsSync(filename)) {
+            console.log(`File ${filename} does not exist. Creating a new empty hashtable.`);
+            return ph_empty<K, V>(size, (key: K) => universalHash(key, size));
+        }
 
-function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtable<K, V>): void {
-  try {
-      // Convert the hashtable to a JSON string with proper formatting
-      const data = JSON.stringify(
-          {
-              keys: hashtable.keys,
-              values: hashtable.values,
-              entries: hashtable.entries,
-              // Note: The hash function is not serialized because functions cannot be serialized to JSON.
-              // If you need to store the hash function, you would need to store its name or logic separately.
-          },
-          null,  // Add indentation for readability (optional)
-          2      // Use 2 spaces for indentation (optional)
-      );
+        const fileContent = fs.readFileSync(filename, 'utf-8');
+        if (fileContent.trim() === '') {
+            console.log(`File ${filename} is empty. Creating a new empty hashtable.`);
+            return ph_empty<K, V>(size, (key: K) => universalHash(key, size));
+        }
 
-      // Write the JSON string to the file
-      fs.writeFileSync(filename, data, 'utf-8');
-
-      console.log(`Hashtable successfully written to ${filename}`);
-  } catch (error) {
-      console.error(`Error writing hashtable to file ${filename}:`, error);
-      throw error; // Re-throw the error to handle it in the calling function
-  }
+        const parsedData = JSON.parse(fileContent);
+        const hashtable: ProbingHashtable<K, V> = {
+            keys: parsedData.keys,
+            values: parsedData.values,
+            hash: (key: K) => universalHash(key, size),
+            entries: parsedData.entries,
+        };
+        return hashtable;
+    } catch (error) {
+        console.error(`Error reading file ${filename}:`, error);
+        return ph_empty<K, V>(size, (key: K) => universalHash(key, size));
+    }
 }
 
-function updateHashTableInFile<K, V>(filename: string, size: number, key: K, value: List<number>): void {  // Change the type to List<number>
-  // Read the hashtable from the file (or create a new one if the file is empty)
-  const hashtable = readHashTableFromFile<K, string>(filename, size); // Change V to string
-
-  // Convert the list value to a string before insertion
-  const valueString = numberListToString(value);
-
-  // Insert the new key-value pair (with automatic resizing and rehashing)
-  ph_insert_with_resize(hashtable, key, valueString);
-
-  // Write the updated hashtable back to the file
-  writeHashTableToFile(filename, hashtable);
+// Writes a hashtable to a .json file
+export function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtable<K, V>): void {
+    try {
+        const data = JSON.stringify(
+            {
+                keys: hashtable.keys,
+                values: hashtable.values,
+                entries: hashtable.entries,
+            },
+            null,
+            2
+        );
+        fs.writeFileSync(filename, data, 'utf-8');
+    } catch (error) {
+        console.error(`Error writing hashtable to file ${filename}:`, error);
+        throw error;
+    }
 }
 
-function removeFromHashTableInFile<K, V>(
-  filename: string,
-  size: number,
-  key: K
-): void { // Change the return type to List<number>
-  // Read the hashtable from the file (or create a new one if the file is empty)
-  const hashtable = readHashTableFromFile<K, string>(filename, size); // Change V to string
+// Updates the hashtable in a file
+export function updateHashTableInFile<K, V>(filename: string, size: number, key: K, value: List<number>): void {
+    const hashtable = readHashTableFromFile<K, string>(filename, size);
+    const valueString = numberListToString(value);
+    ph_insert_with_resize(hashtable, key, valueString);
+    writeHashTableToFile(filename, hashtable);
+}
 
-  // Remove the key-value pair
-  ph_delete(hashtable, key);
-
-  // Write the updated hashtable back to the file
-  writeHashTableToFile(filename, hashtable);
-
-  return
+// Removes a key-value pair from the hashtable in a file
+export function removeFromHashTableInFile<K, V>(filename: string, size: number, key: K): void {
+    const hashtable = readHashTableFromFile<K, string>(filename, size);
+    ph_delete(hashtable, key);
+    writeHashTableToFile(filename, hashtable);
 }
 
 /**
  * Encrypts a file and stores the encryption key in a hashtable.
- * @template K The type of the key in the hashtable (e.g., string).
- * @template V The type of the value in the hashtable (e.g., string).
  * @param filename The name of the file to encrypt.
  * @param stored_keys The filename of the hashtable storing the encryption keys.
  * @param size The size of the hashtable (if a new one needs to be created).
  */
-export async function gameEncryption<K, V>(filename: string, stored_keys: string, size: number): Promise<void> {
-  try {
-    // Generate a valid key using labyrinth_path
-    const validKey = labyrinth_path(10);
-
-    // Convert the key (List<number>) to a string
-    const key = numberListToString(validKey);
-
-    // Encrypt the file using the key
-    encrypt_file(filename, key);
-
-    // Store the key in the hashtable
-    updateHashTableInFile<K, V>(stored_keys, size, filename as K, validKey);
-
-    console.log('File successfully encrypted.');
-  } catch (error) {
-    // Handle errors and provide meaningful error messages
-    console.error("Error encrypting file:", error);
-    throw error;
-  }
+export async function gameEncryption(filename: string, stored_keys: string, size: number): Promise<void> {
+    try {
+        const validKey = labyrinth_path(size);  //generates a valid path for a labyrinth
+        const key = numberListToString(validKey);
+        encrypt_file(filename, key); //encrypts the file with valid path turned into string
+        updateHashTableInFile(stored_keys, size, filename, validKey);
+        console.log('File successfully encrypted.');
+    } catch (error) {
+        if (error instanceof Error) {
+            console.error('Error encrypting file:', error.message);
+        } else {
+            console.error('An unknown error occurred during encryption:', error);
+        }
+        throw error;
+    }
 }
 
 /**
  * Decrypts a file using the key stored in a hashtable and removes the key-value pair after decryption.
- * @template K The type of the key in the hashtable (e.g., string).
- * @template V The type of the value in the hashtable (e.g., string).
  * @param filename The name of the file to decrypt.
  * @param stored_keys The filename of the hashtable storing the encryption keys.
  * @param size The size of the hashtable (if a new one needs to be created).
  */
-export async function gameDecryption<K, V>( filename: string, stored_keys: string, size: number): Promise<void> {
-  try {
-    // Read the hashtable from the file
-    const hashtable = readHashTableFromFile<K, V>(stored_keys, size);
-
-    // Check if the filename exists as a key in the hashtable
-    const passwordToFile = ph_lookup(hashtable, filename as K);
-
-    if (passwordToFile !== undefined) {
-      // Convert the password string to a list of numbers
-      const passwordPath = stringToNumberList(passwordToFile as string);
-
-      // Use the labyrinth_navigator to get the key (as a Promise<List<number>>)
-      const keyPromise = labyrinth_navigator(passwordPath, 10);
-
-      // Wait for the key (List<number>) to be resolved
-      const key = await keyPromise;
-
-      // Convert the key (List<number>) to a string
-      const password = numberListToString(key);
-
-      // Decrypt the file using the password
-      decrypt_file(filename, password);
-
-      console.log("File decrypted successfully.");
-
-      // Remove the key-value pair from the hashtable since decryption succeeded
-      removeFromHashTableInFile<K, V>(stored_keys, size, filename as K);
-
-      console.log("Key-value pair removed from the hashtable.");
-    } else {
-      console.log("Failed to find file in table of encrypted files.");
+export async function gameDecryption(filename: string, stored_keys: string, size: number): Promise<void> {
+    try {
+        const hashtable = readHashTableFromFile(stored_keys, size); //reads the hashtable from file
+        const passwordToFile = ph_lookup(hashtable, filename);  //looks att the keys of the hashtable if file have been encrypted.
+        if (passwordToFile !== undefined) {     //if it exists it will proceed to generate labyrinth 
+            const passwordPath = stringToNumberList(passwordToFile as string);
+            const key = await labyrinth_navigator(passwordPath, size);
+            const password = numberListToString(key);
+            decrypt_file(filename, password);
+            console.log('File decrypted successfully.');
+            removeFromHashTableInFile(stored_keys, size, filename);
+        } else {  //if not, file doesn't exist and can't be found
+            console.log('Failed to find file in table of encrypted files.');
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            console.error('Error during decryption process:', error.message);
+        } else {
+            console.error('An unknown error occurred during decryption:', error);
+        }
+        throw error;
     }
-  } catch (error) {
-    // Handle errors and provide meaningful error messages
-    console.error("Error during decryption process:", error);
-    throw error;
-  }
 }
