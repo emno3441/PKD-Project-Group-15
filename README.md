@@ -1,8 +1,8 @@
 Stating the program
 ----------------
-npm install.
-npm build.
-node ./dist/src/main.js.
+- npm install
+- npm build
+- node ./dist/src/main.js
 
 Start menu interface
 ----------------
