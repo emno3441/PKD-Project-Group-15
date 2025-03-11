@@ -67,7 +67,7 @@ export function resizeAndRehash<K, V>(ht: ProbingHashtable<K, V>): void {
     console.log(`Resized and rehashed hashtable to new size: ${newSize}`);
 }
 
-// Reads a hashtable from a file
+// Reads a hashtable from a .json file
 export function readHashTableFromFile<K, V>(filename: string, size: number): ProbingHashtable<K, V> {
     try {
         if (!fs.existsSync(filename)) {
@@ -95,7 +95,7 @@ export function readHashTableFromFile<K, V>(filename: string, size: number): Pro
     }
 }
 
-// Writes a hashtable to a file
+// Writes a hashtable to a .json file
 export function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingHashtable<K, V>): void {
     try {
         const data = JSON.stringify(
@@ -137,9 +137,9 @@ export function removeFromHashTableInFile<K, V>(filename: string, size: number, 
  */
 export async function gameEncryption(filename: string, stored_keys: string, size: number): Promise<void> {
     try {
-        const validKey = labyrinth_path(size);
+        const validKey = labyrinth_path(size);  //generates a valid path for a labyrinth
         const key = numberListToString(validKey);
-        encrypt_file(filename, key);
+        encrypt_file(filename, key); //encrypts the file with valid path turned into string
         updateHashTableInFile(stored_keys, size, filename, validKey);
         console.log('File successfully encrypted.');
     } catch (error) {
@@ -160,16 +160,16 @@ export async function gameEncryption(filename: string, stored_keys: string, size
  */
 export async function gameDecryption(filename: string, stored_keys: string, size: number): Promise<void> {
     try {
-        const hashtable = readHashTableFromFile(stored_keys, size);
-        const passwordToFile = ph_lookup(hashtable, filename);
-        if (passwordToFile !== undefined) {
+        const hashtable = readHashTableFromFile(stored_keys, size); //reads the hashtable from file
+        const passwordToFile = ph_lookup(hashtable, filename);  //looks att the keys of the hashtable if file have been encrypted.
+        if (passwordToFile !== undefined) {     //if it exists it will proceed to generate labyrinth 
             const passwordPath = stringToNumberList(passwordToFile as string);
             const key = await labyrinth_navigator(passwordPath, size);
             const password = numberListToString(key);
             decrypt_file(filename, password);
             console.log('File decrypted successfully.');
             removeFromHashTableInFile(stored_keys, size, filename);
-        } else {
+        } else {  //if not, file doesn't exist and can't be found
             console.log('Failed to find file in table of encrypted files.');
         }
     } catch (error) {
