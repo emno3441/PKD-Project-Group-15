@@ -13,7 +13,7 @@
   "name": "pkd-project-group-15",
   "version": "1.0.0",
   "description": "Check-list:\r * Start projekt :)\r * Create map",
-  "main": "./dist/src/main.js",
+  "main": "./dist/src/index.js",
   "directories": {},
   "scripts": {
     "build": "tsc",
