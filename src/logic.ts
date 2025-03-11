@@ -88,7 +88,6 @@ export function readHashTableFromFile<K, V>(filename: string, size: number): Pro
             hash: (key: K) => universalHash(key, size),
             entries: parsedData.entries,
         };
-        console.log(`Hashtable read from ${filename}`);
         return hashtable;
     } catch (error) {
         console.error(`Error reading file ${filename}:`, error);
@@ -109,7 +108,6 @@ export function writeHashTableToFile<K, V>(filename: string, hashtable: ProbingH
             2
         );
         fs.writeFileSync(filename, data, 'utf-8');
-        console.log(`Hashtable successfully written to ${filename}`);
     } catch (error) {
         console.error(`Error writing hashtable to file ${filename}:`, error);
         throw error;
@@ -171,7 +169,6 @@ export async function gameDecryption(filename: string, stored_keys: string, size
             decrypt_file(filename, password);
             console.log('File decrypted successfully.');
             removeFromHashTableInFile(stored_keys, size, filename);
-            console.log('Key-value pair removed from the hashtable.');
         } else {
             console.log('Failed to find file in table of encrypted files.');
         }
