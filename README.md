@@ -4,7 +4,7 @@ Starting the program
 - npm build
 - node ./dist/src/main.js
 
-Starting the beta version of the program with GUI (this version can only encrypt but can do so with fileexploer prompt)
+Starting the beta version of the program with GUI (this version can only encrypt but can do so with file explorer dialog)
 ----------------
 - npm install
 - npm run start
